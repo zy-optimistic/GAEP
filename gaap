@@ -1,0 +1,210 @@
+#! /usr/bin/perl -w
+
+use strict;
+use Getopt::Long;
+use Data::Dumper;
+use File::Basename;
+use FindBin qw ($RealBin);
+
+my $task = 'gaap';
+my $mode = 1;
+
+
+my $basic        = 'stat' ;
+my $accuracy     = 'accu' ;
+my $correction   = 'crct' ;
+my $completeness = 'comp' ;
+my $pipeline     = 'pipe' ;
+my $redun        = 'redun';
+my $command      =  shift ;
+
+my $usage = qq(
+  Program: run_pipeline.pl
+  Version: V1.0
+  
+  Pipeline to assess genome assembly.
+  
+  Usage: perl run_pipeline.pl <command> [options]
+  
+  Command: 
+    stat        report 
+    accu        
+    crct        
+    comp
+    redun        
+    pipe        
+    
+);
+
+die $usage unless $command;
+
+##------------------------------------main------------------------------------##
+##########
+##run bwa
+##########
+#if ( exists $conf{NGS_reads1} && exists $conf{NGS_reads2} ) {
+#	my $run_bwa = "perl run_bwa.pl -r $assembly -i $conf{NGS_reads1} -I $conf{NGS_reads2} -t $threads -d $out_dir/bwa_align -o bwa_align";
+#	_system( $run_bwa, 1);
+#}
+##############
+###run hisat2
+##############
+#if ( exists $conf{RNA_seq_reads1} && exists $conf{RNA_seq_reads2} ) {
+#	my $run_hisat2 = "perl run_hisat2.pl -r $assembly -i $conf{RNA_seq_reads1} -I $conf{RNA_seq_reads2} -t $threads -d $out_dir/hisat2_align -o hisat2_align";
+#	_system( $run_hisat2, 1);
+#}
+###############
+##run minimap2
+###############
+#if ( exists $conf{RNA_seq_reads1} && exists $conf{RNA_seq_reads2} ) {
+#	my $run_bwa = "perl run_hisat2.pl -r $assembly -i $conf{RNA_seq_reads1} -I $conf{RNA_seq_reads2} -t $threads -d $out_dir/hisat2_align -o hisat2_align";
+#}
+
+#my $basic        = 'stat' ;
+#my $accuracy     = 'accu' ;
+#my $correction   = 'crct' ;
+#my $completrness = 'comp' ;
+#my $pipeline     = 'pipe' ;
+#my $redun        = 'Redun';
+
+if ( $command eq $basic ) {
+	_system("perl $RealBin/scripts/basic.pl @ARGV", $mode);
+}elsif ( $command eq $accuracy ) {
+	_system("perl $RealBin/scripts/stat_accuracy.pl @ARGV", $mode);
+}elsif ( $command eq $correction ) {
+	_system("perl $RealBin/scripts/run_minimap2.pl @ARGV", $mode);
+}elsif ( $command eq $completeness ) {
+	_system("perl $RealBin/scripts/run_hisat2.pl @ARGV", $mode);
+}elsif ( $command eq $redun ) {
+	_system("perl $RealBin/scripts/cov_snp_dot.pl @ARGV", $mode);
+}elsif ( $command eq $pipeline ) {
+	
+}else {
+	die "[$task] Error! Unrecognized command: $command.\n", $usage;
+}
+
+exit(0);
+##---------------------------------subroutine---------------------------------##
+sub parse_conf {
+	my $conf_file = shift;
+	open CONF, '<', $conf_file or die "Can't open config file: $conf_file.\n";
+	while (<CONF>) {
+		chomp;
+		next if /^#/;
+		my ($parameter, $value) = split /=/, $_;
+		next if !$value || $value =~ /^\s*$/;
+		$parameter =~ s/^\s+//;
+		$parameter =~ s/\s+$//;
+		$value =~ s/^\s+//;
+		$value =~ s/\s+$//;
+		die "[$task] Parse config file error! Make sure there's no space in path.\n" if $value =~ /\s+/;
+		$conf{$parameter} = $value;
+	}
+	%conf ? return %conf : die "[$task] Error! No value has been found in config file.\n";
+}
+
+sub genome_stat {    #genome_stat(assembly file)
+	my $assembly = shift;
+	my $prefix_out = shift;
+	my $cmd = "$RealBin/scripts/basic.pl $assembly > $prefix_out.genome_stat.txt";
+	_system($cmd, $mode);
+}
+
+sub base_accuracy {  #base_accuracy(assembly file, NGS reads, threads)
+	my $assembly   = shift;
+	my $reads      = shift;
+	my $prefix_out = shift;
+	my $threads    = shift;
+	my $cmd = "$RealBin/scripts/run_bwa.pl -r $assembly ";
+	$cmd   .= "-o $prefix_out ";
+	for (@$reads) {
+		$cmd .= "-i $_[0] ";
+		$cmd .= "-I $_[1] " if $_[1];
+	}
+	$cmd .= $threads if $threads;
+	_system($cmd, $mode);
+	
+	$cmd  = "$RealBin/scripts/snp_calling_parallel.pl -r $assembly -b $prefix_out.paired.sorted.bam ";
+	$cmd .= "-o $prefix_out ";
+	$cmd .= $threads if $threads;
+	_system($cmd, $mode);
+	
+	$cmd  = "$RealBin/scripts/stat_accuracy_base.pl -v $prefix_out.flt.vcf -b $prefix_out.markdup.bam ";
+	$cmd .= "-o $prefix_out ";
+	_system($cmd, $mode);
+}
+
+sub kmer_accuracy {  #kmer_accuracy(assembly file, NGS reads, threads)
+	
+}
+
+sub bkp_detected {   #bkp_detected(assembly file, TGS reads, threads)
+	
+}
+
+sub mapping_rate {   #mapping_rate(assembly file, reads, threads)
+	
+}
+
+sub _system {
+	my $cmd = shift;
+	my $mode = shift if @_;
+	if ( $mode == 1 ) {
+		print $cmd,"\n";
+	}else {
+		print $cmd,"\n";
+		die "[$task] Can't run \"$cmd\".\n" if ( system $cmd );
+	}
+	return;
+}
+
+sub check_software {
+	my $software = shift;
+	my $path = shift if @_;
+	if ( $path ) {
+		if ( basename($path) eq "software" && -X $path ) {
+			$software = $path;
+		}else {
+			return "1";
+		}
+	}else {
+		my @path = split /:/, $ENV{PATH};
+		foreach ( @path ) {
+			$_ =~ s/\/$//; 
+			return $software = "$_/$software" if -X "$_/$software";
+		}
+		return "1";
+	}
+}
+
+
+__END__
+
+##DATA
+#TGS reads
+ TGS_reads=
+#TGS BAM
+ TGS_BAM=
+#NGS reads
+ NGS_reads1=
+ NGS_reads2=
+ NGS_reads1.2=
+ NGS_reads2.2=
+#NGS BAM
+ NGS_BAM_path=
+#RNA seq
+ RNA_seq_reads1=
+ RNA_seq_reads2=
+ 
+##SOFTWARE(path to executable file)
+#samtools
+ path_to_samtools=
+#bwa 
+ path_to_bwa=
+#hisat2
+ path_to_hisat2=
+#minimap2
+ path_to_minimap2=
+#bcftools
+ path_to_bcftools=
+ 
