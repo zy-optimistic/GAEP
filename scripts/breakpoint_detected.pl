@@ -3,14 +3,14 @@
 use strict;
 use Getopt::Long;
 use Bio::DB::Sam;
-use List::Util qw(min max sum);
 use threads;
 use Thread::Semaphore;
 use threads::shared;
 use Thread::Queue;
-use Data::Dumper;
+use FindBin qw($RealBin);
 
 my $task = "break_point_detected";
+my $mode = 0;
 
 my $usage = <<USAGE;
 Program: $task
@@ -19,39 +19,43 @@ Author:  Zhang Yong
 
 Options:
          -r <FILE>           genome assembly in a fasta file
-         -b <FILE>           bam alignment by TGS data
+         -i <FILE>           Fastq file. Can be set more than one time.
+         -l <FILE>           File listing fastq files. One per line.
+         -x <STR>            Reads type. (ont,pb)
+         -b <FILE>           bam alignment by TGS data, will ignore -i, -l and -x
          -e <INT>            give a estimated depth
          -c <INT>            a read with more than INT bp cliped as cliped read, default 1000
          -g <INT>            ignore i bp at both end of contigs
          -d <PATH>           output directory
          -o <STR>            output prefix
-		 -t <INT>            parallel number
+         -t <INT>            parallel number
          --samtools <PATH>   path to samtools
          -h                  print help massage
 USAGE
 
 my $threads = 4;
-my ($assembly,$file_list,$bam,$bam_depth,$reads_type,$dir,$prefix_out,$no_index,$help,$samtools);
+my ($assembly,$file_list,$read_type,$bam,$bam_depth,$reads_type,$dir,$prefix,$no_index,$help,$samtools);
 my $site_distance  = 500;
 my $ignore_end     = 5000;
 my $clip_threshold = 1000;
 my @sequences;
 GetOptions(
 	"r:s"          => \$assembly,
-	#"i:s"          => \@sequences,     #FASTQ or FASTA
-	#"l|list:s"     => \$file_list,
+	"i:s"          => \@sequences,      #FASTQ or FASTA
+	"l|list:s"     => \$file_list,
+	"x:s"          => \$read_type,	    #(ont,pb)
 	"b:s"          => \$bam,		   	#bam alignment by TGS data
 	"e:i"          => \$bam_depth,     	#give a estimated depth 
 	"c:i"          => \$clip_threshold,	
 	"g:i"          => \$ignore_end,    	#ignore i bp at both end of contigslength regarded as a assumptive misjoin
  	"t:i"          => \$threads,
 	"d:s"          => \$dir,
-	"o:s"          => \$prefix_out,
+	"o:s"          => \$prefix,
 	"samtools"     => \$samtools,
 	"h"            => \$help
 );
 
-die $usage if $help || !$bam;
+die $usage if $help || (!$bam && !@sequences && !$file_list);
 
 ##Check software.
 $samtools = $samtools ? check_software("samtools", $samtools) : check_software("samtools");
@@ -59,13 +63,29 @@ die "[$task] Error! Samtools is not found.
 [$task] Check your config file or set it in your environment.\n" if $samtools eq "-1";
 
 ##Check input files.
-if ($dir && ! -e $dir){
-	if (system "mkdir $dir"){
+$dir = "gaap_${task}_$$" unless $dir;
+if (! -e $dir){
+	if (system "mkdir -p $dir"){
 		die "[$task]Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix_out   = "output" unless $prefix_out;
-$prefix_out   = "$dir/$prefix_out" if $dir;
+$prefix   = "bkp_output_$$" unless $prefix;
+my $prefix_out   = "$dir/$prefix" if $dir;
+
+## reads mapping
+if (!$bam) {
+	my $map_cmd = "$RealBin/run_minimap2.pl -r $assembly ";
+	if (@sequences) {
+		$map_cmd .= "-i $_ " for @sequences;
+	}
+	$map_cmd .= "-l $file_list " if $file_list;
+	$map_cmd .= "-x $read_type " if $read_type;
+	$map_cmd .= "-t $threads "   if $threads;
+	$map_cmd .= "-d $dir/../mapping/TGS_mapping ";
+	$map_cmd .= "-o $prefix ";
+	_system($map_cmd, $mode);
+	$bam = "$dir/../mapping/TGS_mapping/${prefix}_TGS_mapping.bam"
+}
 
 #---------------------------------variates-------------------------------------#
 

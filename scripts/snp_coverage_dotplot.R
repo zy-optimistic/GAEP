@@ -102,11 +102,15 @@ if (length(input) < 3) {
 
 data <- read.delim(input[1],header = FALSE)
 if (cov_max == 0) {
-	cov_max = as.integer(mean(data$V4) * 2.5)
+	cov_max <- as.integer(mean(data$V4) * 2.5)
 }
 if (snv_max == 0) {
-	snv_max = mean(data$V5) * 4
+	snv_max <- mean(data$V5) * 4
 }
+if (snv_max < 1) {
+    snv_max <- 1
+}
+
 
 #data <- data[data[,4]<cov_max,]
 #data <- data[data[,5]<snv_max,]
@@ -133,6 +137,7 @@ if ( input[3] == "png" ) {
 
 print(cov_max)
 print(snv_max)
+cat(mean(data$V4), cov_max ,snv_max, "\n")
 plot_scatter_with_density(data, data$V4 ,data$V5 , mean(data$V4), cov_max ,snv_max ,100 ,1000)
 
 dev.off()

@@ -45,7 +45,7 @@ unless ($assembly && (@sequences || $file_list)) {
 }
 
 if ($dir and ! -e $dir){
-	if (system "mkdir $dir"){
+	if (system "mkdir -p $dir"){
 		die ("[$task]Error! Can't make directory: $dir.\n");
 	}
 }
@@ -111,9 +111,11 @@ foreach (@sam_list){
 if (@file_list > 1){
 	my $merge_cmd = "samtools merge ";
 	$merge_cmd .= "-@ $threads " if $threads;
-	$merge_cmd .= "-h $sam_list[0] $prefix_out.merged.bam ";
+	$merge_cmd .= "-h $sam_list[0] $out_bam ";
 	$merge_cmd .= join (" ",map {"$_.sorted.bam"} @sam_list);
 	_system($merge_cmd, $sys_run);
+}else {
+	rename "${prefix_out}_1.sorted.bam", $out_bam or die "[$task] Can't rename ${prefix_out}_1.sorted.bam.\n";
 }
 
 ##-------------------------------subroutines----------------------------------##

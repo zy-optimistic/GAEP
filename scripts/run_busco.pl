@@ -30,13 +30,13 @@ Options:
 USAGE
 
 my $config = {};
-my ($assembly,$dir,$prefix_out,$threads,$lineage,$species,$help);
+my ($assembly,$dir,$prefix_out,$threads,$fconfig,$lineage,$species,$help);
 GetOptions(
 	"r:s"            => \$assembly,
 	"d:s"            => \$dir,
 	"o:s"            => \$prefix_out,
 	"t:i"            => \$threads,
-	"i:s"            => \$config,
+	"i:s"            => \$fconfig,
 	"l:s"            => \$lineage,
 	"s:s"            => \$species,
 	"tblastn:s"      => \$config->{tblastn},
@@ -45,7 +45,7 @@ GetOptions(
 	"h"              => \$help,
 );
 
-die $usage if ($help || !$assembly);
+die $usage if $help || (!$assembly && !$lineage);
 
 if ($dir && !-e $dir){
 	if (system "mkdir $dir"){
@@ -57,9 +57,11 @@ $prefix_out   = "output" unless $prefix_out;
 $ENV{PATH} = "$ENV{PATH}".":".dirname($config->{'augustus'});
 my $AUGUSTUS_CONFIG_PATH = dirname($config->{'augustus'})."/../config";
 $ENV{AUGUSTUS_CONFIG_PATH} = $AUGUSTUS_CONFIG_PATH;
-my $default_config = "$RealBin/../third_party/busco/config/config.ini.default";
-my $config_file = create_config($config, $default_config);
-my $BUSCO_CONFIG_FILE    = "$config_file";
+if (!$fconfig) {
+	my $default_config = "$RealBin/../third_party/busco/config/config.ini.default";
+	$fconfig = create_config($config, $default_config);
+}
+my $BUSCO_CONFIG_FILE    = "$fconfig";
 $ENV{BUSCO_CONFIG_FILE}    = $BUSCO_CONFIG_FILE;
 
 

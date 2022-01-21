@@ -2,6 +2,8 @@
 
 use strict;
 use Getopt::Long;
+use FindBin qw($RealBin);
+Getopt::Long::Configure qw( bundling no_ignore_case );
 
 my $task = "stat_accuracy_base";
 my $mode = 0;
@@ -10,10 +12,14 @@ my $usage = qq(
 Program: $task
 Version: v1.0
 
-Usage: $task 
+Usage:   $task 
 Options:
-         -v <FILE>           VCF/BCF files
-         -b <FILE>           bam file
+         -r <FILE>           genome assembly in a fasta file
+         -i <FILE>           fastq1 file. Can be set more than one time
+         -I <FILE>           fastq2 file. Can be set more than one time
+         -l <FILE>           file listing fastq files. Read1 and read2 delimited with tab
+         -b <FILE>           bam file, will ignore -i, -I and -l
+		 -v <FILE>
          -d <INT>            output directory
          -o <INT>            output prefix
          --bcftools <PATH>   path to bcftools
@@ -23,31 +29,35 @@ Options:
 
 ##----------------------------------options-----------------------------------##
 
-my ($vcf,$bam,$dir,$prefix_out,$bcftools,$bedtools,$help);
+my ($assembly,@reads1,@reads2,$file_list,$threads,$vcf,$bam,$dir,$prefix,$bcftools,$bedtools,$help);
 GetOptions (
+    "r:s"        => \$assembly,
+    "i:s"        => \@reads1,
+    "I:s"        => \@reads2,
+    "l|list:s"   => \$file_list,
+	"t:i"        => \$threads,
 	"v:s"        => \$vcf,
 	"b:s"        => \$bam,
 	"d:s"        => \$dir,
-	"o:s"        => \$prefix_out,
+	"o:s"        => \$prefix,
 	"h"          => \$help,
 	"bcftools:s" => \$bcftools, 
 	"bedtools:s" => \$bedtools,
 );
-die ($usage) if $help;
+die $usage if $help;
 ##Check input files.
 ##Check input files and directory.
-die ($usage) unless $vcf and $bam;
-print STDERR "[$task] No such file: $vcf." unless -e $vcf;
-print STDERR "[$task] No such file: $bam." unless -e $bam;
-$prefix_out = "${task}_output" unless $prefix_out;
-if ( $dir ){
-	unless ( -e $dir ) {
-		die ("[$task]Error! Can't make directory:\"$dir\"\n") if ( system "mkdir $dir" );
-	}else {
-		$dir =~ s/\/$//;
+die $usage if !@reads1 && !@reads2 && !$file_list && !$bam;
+
+$dir = "gaap_${task}_$$" unless $dir;
+if (! -e $dir){
+	if (system "mkdir -p $dir"){
+		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
-	$prefix_out = "$dir/$prefix_out";
 }
+$prefix = "bkp_output_$$" unless $prefix;
+my $prefix_out = "$dir/$prefix" if $dir;
+
 
 ##Check software.
 $bcftools = $bcftools ? check_software("bcftools", $bcftools) : check_software("bcftools");
@@ -57,6 +67,26 @@ $bedtools = $bedtools ? check_software("bedtools", $bedtools) : check_software("
 die "[$task] Error! Bedtools is not found.
 [$task] Check your config file or set it in your environment.\n" if $bedtools eq "-1";
 
+if (!$vcf && !$bam) {
+	my $map_cmd = "$RealBin/run_bwa.pl -r $assembly ";
+	for (my $i = 0; $i <= $#reads1 && $i <= $#reads2; $i++) {
+		$map_cmd .= "-i $reads1[$i] -I $reads2[$i] ";
+	}
+	$map_cmd .= "-l $file_list " if $file_list;
+	$map_cmd .= "-t $threads "   if $threads;
+	$map_cmd .= "-d $dir/../mapping/NGS_mapping ";
+	$map_cmd .= "-o $prefix ";
+	_system($map_cmd, $mode);
+	$bam = "$dir/../mapping/NGS_mapping/$prefix.paired.sorted.bam";
+	
+	my $var_cmd = "$RealBin/var_calling.pl -r $assembly ";
+	$var_cmd .= "-b $bam ";
+	$var_cmd .= "-t $threads "   if $threads;
+	$var_cmd .= "-d $dir/../variants/ ";
+	$var_cmd .= "-o $prefix ";
+	_system($var_cmd, $mode);
+	$vcf = "$dir/../variants/$prefix.flt.vcf"
+}
 
 ##---------------------------------variants-----------------------------------##
 
@@ -73,7 +103,7 @@ my $out_file = "$prefix_out.base.qv";
 ##mappable length
 my $genomecov = "$prefix_out.genomecov";
 my $bedtools_cmd = "$bedtools genomecov -ibam $bam -split > $genomecov";
-#_system($bedtools_cmd, $mode);
+_system($bedtools_cmd, $mode);
 open COV, '<', $genomecov or die "[$task] Can't open such file: $genomecov.\n";
 while (<COV>) {
 	chomp;
