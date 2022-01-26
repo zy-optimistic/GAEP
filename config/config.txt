@@ -1,0 +1,47 @@
+##DATA (delete the # or add a new line if you have more than one sample)
+[TGS]
+data=
+#data=
+type=
+
+[NGS]
+data1=
+data2=
+#data1=
+#data2=
+
+[TRANS]
+data1=
+data2=
+#data1=
+#data2=
+ 
+##Dependencies(path to executable file)
+{samtools}
+samtools=
+
+{minimap2}
+minimap2=
+
+{bwa}
+bwa=
+
+{bcftools}
+bcftools=
+
+{hisat2}
+hisat2=
+{hisat2-build}
+hisat2-build=
+
+{Rscript}
+Rscript=
+
+
+#busco depencies
+{tblastn}
+tblastn=
+{augustus}
+augustus=
+{hmmsearch}
+hmmsearch=

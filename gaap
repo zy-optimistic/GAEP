@@ -9,43 +9,40 @@ use FindBin qw ($RealBin);
 my $task = 'gaap';
 my $mode = 0;
 
-my $pipeline     = 'pipe' ;
-my $basic        = 'stat' ;
-my $bkp          = 'bkp' ;
-my $correction   = 'crct' ;
-my $completeness = 'comp' ;
-my $redun        = 'redun';
 my $command      =  shift ;
 
 my $usage = qq(
-  Program: gaap
-  Version: V1.0
-  
-  Pipeline to assess genome assembly.
-  
-  Usage:   gaap <command> [options]
-  Command: stat       report genome basic information
-           macc       base accuracy based on reads mapping 
-           bkp        breakpoints number detected
-           snvcov     SNV-coverage dot plot
-           busco      run busco
+Program: gaap
+Version: V1.0
+
+Pipeline to assess genome assembly.
+
+Usage:   gaap <command> [options]
+
+Command: pipe       run pipeline
+         stat       report genome basic information
+         macc       base accuracy based on reads mapping 
+         bkp        breakpoints number detected
+         snvcov     SNV-coverage dot plot
+         busco      run busco
+		   
 );
 
 die $usage unless $command;
 
 ##------------------------------------main------------------------------------##
 if ( $command eq 'pipe' ) {
-	
+	system "$RealBin/scripts/pipeline.pl @ARGV" and exit(1);
 }elsif ( $command eq 'stat' ) {
-	system "$RealBin/scripts/basic.pl @ARGV" and die "[$task] Running error with $RealBin/scripts/basic.pl.\n";
+	system "$RealBin/scripts/basic.pl @ARGV" and exit(1);
 }elsif ( $command eq 'macc' ) {
-	system "$RealBin/scripts/stat_accuracy_base.pl @ARGV" and die "[$task] Running error with $RealBin/scripts/stat_accuracy_base.pl.\n";
+	system "$RealBin/scripts/stat_accuracy_base.pl @ARGV" and exit(1);
 }elsif ( $command eq 'bkp' ) {
-	system "$RealBin/scripts/breakpoint_detected.pl @ARGV" and die "[$task] Running error with $RealBin/scripts/breakpoint_detected.pl.\n";
+	system "$RealBin/scripts/breakpoint_detected.pl @ARGV" and exit(1);
 }elsif ( $command eq 'snvcov' ) {
-	system "$RealBin/scripts/cov_snp_dot.pl @ARGV" and die "[$task] Running error with $RealBin/scripts/cov_snp_dot.pl.\n";
+	system "$RealBin/scripts/cov_snp_dot.pl @ARGV" and exit(1);
 }elsif ( $command eq 'busco' ) {
-	system "$RealBin/scripts/run_busco.pl @ARGV" and die "[$task] Running error with $RealBin/scripts/run_busco.pl.\n";
+	system "$RealBin/scripts/run_busco.pl @ARGV" and exit(1);
 }else {
 	die "[$task] Error! Unrecognized command: $command.\n", $usage;
 }

@@ -30,7 +30,7 @@ GetOptions(
 	"r:s"      => \$assembly,
 	"i:s"      => \@sequences,     #FASTQ or FASTA
 	"l|list:s" => \$file_list,
-	"x:s"      => \$reads_type,	  #(ont,pb)
+	"x:s"      => \$reads_type,	   #(ont,pb)
 	"t:i"      => \$threads,
 	"d:s"      => \$dir,
 	"o:s"      => \$prefix_out,
@@ -64,7 +64,7 @@ die "[$task] Error! Samtools is not found.
 
 ##reading file list
 if (@sequences){
-	@file_list = map {$_} @sequences;
+	@file_list = @sequences;
 }
 if ($file_list){
 	open CONFIG , $file_list;
@@ -89,6 +89,8 @@ foreach (@file_list){
 		$minimap2_cmd .= "-L -ax map-ont $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}elsif ($reads_type	eq 'pb'){
 		$minimap2_cmd .= "-ax map-pb $assembly $_ -o ${prefix_out}_${count}.sam"; 
+	}elsif ($reads_type	eq 'ccs'){
+		$minimap2_cmd .= "-ax sam20 $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}else {
 		$minimap2_cmd .= "$assembly $_ -o ${prefix_out}_${count}.sam";
 	}

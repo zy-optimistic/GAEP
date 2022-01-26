@@ -107,9 +107,6 @@ if (cov_max == 0) {
 if (snv_max == 0) {
 	snv_max <- mean(data$V5) * 4
 }
-if (snv_max < 1) {
-    snv_max <- 1
-}
 
 
 #data <- data[data[,4]<cov_max,]

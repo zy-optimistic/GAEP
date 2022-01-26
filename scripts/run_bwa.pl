@@ -25,15 +25,15 @@ GetOptions(
 
 ##Check input files and directory.
 die ("[$task]Error!Please input your assembly file.\n") unless $assembly;
-$prefix_out = "${task}_output" unless $prefix_out;
-if ( $dir ){
-	unless ( -e $dir ) {
-		die ("[$task]Error! Can't make directory:\"$dir\"\n") if ( system "mkdir $dir" );
-	}else {
-		$dir =~ s/\/$//;
+
+$dir = "gaap_${task}_$$" unless $dir;
+if (! -e $dir){
+	if (system "mkdir -p $dir"){
+		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
-	$prefix_out = "$dir/$prefix_out";
 }
+$prefix = "bkp_output_$$" unless $prefix;
+my $prefix_out = "$dir/$prefix" if $dir;
 
 ##check software
 $bwa = $bwa ? check_software("bwa", $bwa) : check_software("bwa");

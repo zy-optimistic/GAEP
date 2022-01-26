@@ -40,19 +40,19 @@ my $ignore_end     = 5000;
 my $clip_threshold = 1000;
 my @sequences;
 GetOptions(
-	"r:s"          => \$assembly,
-	"i:s"          => \@sequences,      #FASTQ or FASTA
-	"l|list:s"     => \$file_list,
-	"x:s"          => \$read_type,	    #(ont,pb)
-	"b:s"          => \$bam,		   	#bam alignment by TGS data
-	"e:i"          => \$bam_depth,     	#give a estimated depth 
-	"c:i"          => \$clip_threshold,	
-	"g:i"          => \$ignore_end,    	#ignore i bp at both end of contigslength regarded as a assumptive misjoin
- 	"t:i"          => \$threads,
-	"d:s"          => \$dir,
-	"o:s"          => \$prefix,
-	"samtools"     => \$samtools,
-	"h"            => \$help
+	"r:s"      => \$assembly,
+	"i:s"      => \@sequences,      #FASTQ or FASTA
+	"l|list:s" => \$file_list,
+	"x:s"      => \$read_type,	    #(ont,pb)
+	"b:s"      => \$bam,		   	#bam alignment by TGS data
+	"e:i"      => \$bam_depth,     	#give a estimated depth 
+	"c:i"      => \$clip_threshold,	
+	"g:i"      => \$ignore_end,    	#ignore i bp at both end of contigslength regarded as a assumptive misjoin
+ 	"t:i"      => \$threads,
+	"d:s"      => \$dir,
+	"o:s"      => \$prefix,
+	"samtools" => \$samtools,
+	"h"        => \$help
 );
 
 die $usage if $help || (!$bam && !@sequences && !$file_list);
@@ -69,7 +69,7 @@ if (! -e $dir){
 		die "[$task]Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix   = "bkp_output_$$" unless $prefix;
+$prefix   = "breakpoint_output_$$" unless $prefix;
 my $prefix_out   = "$dir/$prefix" if $dir;
 
 ## reads mapping
@@ -81,10 +81,10 @@ if (!$bam) {
 	$map_cmd .= "-l $file_list " if $file_list;
 	$map_cmd .= "-x $read_type " if $read_type;
 	$map_cmd .= "-t $threads "   if $threads;
-	$map_cmd .= "-d $dir/../mapping/TGS_mapping ";
+	$map_cmd .= "-d $dir/mapping/TGS_mapping ";
 	$map_cmd .= "-o $prefix ";
 	_system($map_cmd, $mode);
-	$bam = "$dir/../mapping/TGS_mapping/${prefix}_TGS_mapping.bam"
+	$bam = "$dir/mapping/TGS_mapping/${prefix}_TGS_mapping.bam"
 }
 
 #---------------------------------variates-------------------------------------#

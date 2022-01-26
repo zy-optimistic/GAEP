@@ -19,7 +19,7 @@ Options:
          -I <FILE>           fastq2 file. Can be set more than one time
          -l <FILE>           file listing fastq files. Read1 and read2 delimited with tab
          -b <FILE>           bam file, will ignore -i, -I and -l
-		 -v <FILE>
+         -v <FILE>
          -d <INT>            output directory
          -o <INT>            output prefix
          --bcftools <PATH>   path to bcftools
@@ -31,10 +31,10 @@ Options:
 
 my ($assembly,@reads1,@reads2,$file_list,$threads,$vcf,$bam,$dir,$prefix,$bcftools,$bedtools,$help);
 GetOptions (
-    "r:s"        => \$assembly,
-    "i:s"        => \@reads1,
-    "I:s"        => \@reads2,
-    "l|list:s"   => \$file_list,
+	"r:s"        => \$assembly,
+	"i:s"        => \@reads1,
+	"I:s"        => \@reads2,
+	"l|list:s"   => \$file_list,
 	"t:i"        => \$threads,
 	"v:s"        => \$vcf,
 	"b:s"        => \$bam,
@@ -50,12 +50,13 @@ die $usage if $help;
 die $usage if !@reads1 && !@reads2 && !$file_list && !$bam;
 
 $dir = "gaap_${task}_$$" unless $dir;
+$dir =~ s/\/$//;
 if (! -e $dir){
 	if (system "mkdir -p $dir"){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix = "bkp_output_$$" unless $prefix;
+$prefix = "accu_output_$$" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
 
 
@@ -74,18 +75,18 @@ if (!$vcf && !$bam) {
 	}
 	$map_cmd .= "-l $file_list " if $file_list;
 	$map_cmd .= "-t $threads "   if $threads;
-	$map_cmd .= "-d $dir/../mapping/NGS_mapping ";
+	$map_cmd .= "-d $dir/mapping/NGS_mapping ";
 	$map_cmd .= "-o $prefix ";
 	_system($map_cmd, $mode);
-	$bam = "$dir/../mapping/NGS_mapping/$prefix.paired.sorted.bam";
+	$bam = "$dir/mapping/NGS_mapping/$prefix.paired.sorted.bam";
 	
 	my $var_cmd = "$RealBin/var_calling.pl -r $assembly ";
 	$var_cmd .= "-b $bam ";
 	$var_cmd .= "-t $threads "   if $threads;
-	$var_cmd .= "-d $dir/../variants/ ";
+	$var_cmd .= "-d $dir/variants/ ";
 	$var_cmd .= "-o $prefix ";
 	_system($var_cmd, $mode);
-	$vcf = "$dir/../variants/$prefix.flt.vcf"
+	$vcf = "$dir/variants/$prefix.flt.vcf"
 }
 
 ##---------------------------------variants-----------------------------------##

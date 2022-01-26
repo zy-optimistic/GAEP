@@ -17,7 +17,7 @@ GetOptions(
 	"I:s"            => \@reads2,
 	"l|list:s"       => \$file_list,
 	"d:s"            => \$dir,
-	"o:s"            => \$prefix_out,
+	"o:s"            => \$prefix,
 	"t|threads:i"    => \$threads,
 	"hisat2:s"       => \$hisat2,
 	"hisat2_build:s" => \$hisat2_build,
@@ -26,16 +26,15 @@ GetOptions(
 
 ##Check input files and directory.
 die ("[$task]Error!Please input your assembly file.\n") unless $assembly;
-$prefix_out = "${task}_output" unless $prefix_out;
-if ( $dir ){
-	unless ( -e $dir ) {
-		die ("[$task]Error! Can't make directory:\"$dir\"\n") if ( system "mkdir $dir" );
-	}else {
-		$dir =~ s/\/$//;
+$dir = "gaap_${task}_$$" unless $dir;
+$dir =~ s/\/$//;
+if (! -e $dir){
+	if (system "mkdir -p $dir"){
+		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
-	$prefix_out = "$dir/$prefix_out";
 }
-print $prefix_out,"\n";
+$prefix = "${task}_output" unless $prefix;
+my $prefix_out = "$dir/$prefix" if $dir;
 
 ##-------------------------------variants---------------------------------##
 my %flist = ();
@@ -74,6 +73,8 @@ if ( @reads1 && @reads2 ) {
 	push @{ $flist{single} }, @reads2;
 }
 print Dumper(\%flist);
+
+my $out_file = "${prefix_out}_TRANS_mapping.bam";
 
 ##Creating a HISAT2 index
 my $index_cmd = "hisat2-build ";
@@ -122,6 +123,7 @@ if ( defined $flist{paired} ) {
 	$sort_cmd .= "$hisat2_paired_bam -o $hisat2_paired_sort_bam";
 	_system ($sort_cmd,$sys_run);
 	
+	rename $hisat2_paired_sort_bam, $out_file or die "[$task] Can't rename ${prefix_out}_paired_0.sam to $hisat2_paired_out.\n";
 }
 
 if ( defined $flist{single} ) {
@@ -161,7 +163,7 @@ if ( defined $flist{single} ) {
 	$sort_cmd .= "-@ $threads " if $threads;
 	$sort_cmd .= "$hisat2_single_bam -o $hisat2_single_sort_bam";
 	_system ($sort_cmd,$sys_run);
-	
+	rename $hisat2_single_sort_bam, $out_file or die "[$task] Can't rename ${prefix_out}_paired_0.sam to $hisat2_paired_out.\n";
 }
 
 

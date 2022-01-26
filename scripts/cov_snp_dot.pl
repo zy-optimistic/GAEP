@@ -44,7 +44,7 @@ my $task = "cov_snp_dot";
 my $mode = 0;
 
 my ($assembly,@reads1,@reads2,$file_list,$threads,$fwindows,$bam,$vcf,$win_size,$prefix,$dir,$bedtools,$bcftools,$Rscript,$help);
-my $type = 'png';
+my $type = 'pdf';
 GetOptions(
     "r:s"        => \$assembly,
     "i:s"        => \@reads1,
