@@ -1,15 +1,16 @@
 #! /usr/bin/perl -w
 
 use strict;
+use File::Basename;
 use Getopt::Long;
 use Data::Dumper;
 Getopt::Long::Configure qw(bundling no_ignore_case);
 
 my $task = "run_hisat2";
-my $sys_run = 1;
+my $sys_run = 0;
 
 my ($assembly,$file_list,@reads1,@reads2,
-    $dir,$pre_out,$prefix_out,$threads,
+    $dir,$pre_out,$prefix,$threads,
     $hisat2,$hisat2_build,$samtools);
 GetOptions(
 	"r:s"            => \$assembly,
@@ -123,7 +124,7 @@ if ( defined $flist{paired} ) {
 	$sort_cmd .= "$hisat2_paired_bam -o $hisat2_paired_sort_bam";
 	_system ($sort_cmd,$sys_run);
 	
-	rename $hisat2_paired_sort_bam, $out_file or die "[$task] Can't rename ${prefix_out}_paired_0.sam to $hisat2_paired_out.\n";
+	rename $hisat2_paired_sort_bam, $out_file or die "[$task] Can't rename $hisat2_paired_sort_bam to $out_file.\n";
 }
 
 if ( defined $flist{single} ) {
@@ -139,7 +140,7 @@ if ( defined $flist{single} ) {
 		$hisat2_cmd .= "-p $threads " if $threads;
 		$hisat2_cmd .= "-x $index ";
 		my $reads1 = $flist{single}[0];
-		$hisat2_cmd .= "-1 $reads1 -S ${prefix_out}_single_$i.sam";
+		$hisat2_cmd .= "-U $reads1 -S ${prefix_out}_single_$i.sam";
 		_system($hisat2_cmd,$sys_run);
 	}
 	
@@ -163,7 +164,7 @@ if ( defined $flist{single} ) {
 	$sort_cmd .= "-@ $threads " if $threads;
 	$sort_cmd .= "$hisat2_single_bam -o $hisat2_single_sort_bam";
 	_system ($sort_cmd,$sys_run);
-	rename $hisat2_single_sort_bam, $out_file or die "[$task] Can't rename ${prefix_out}_paired_0.sam to $hisat2_paired_out.\n";
+	rename $hisat2_single_sort_bam, $out_file or die "[$task] Can't rename $hisat2_single_sort_bam to $out_file.\n";
 }
 
 
@@ -212,7 +213,7 @@ sub check_software {
 	my $software = shift;
 	my $path = shift if @_;
 	if ( $path ) {
-		if ( basename($path) eq "software" && -X $path ) {
+		if ( basename($path) eq $software && -X $path ) {
 			$software = $path;
 		}else {
 			return "-1";

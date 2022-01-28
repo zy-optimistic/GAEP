@@ -35,11 +35,11 @@
  -d           Output directory.
  -o           Output prefix.
  -c           Config file, specify the path of dependencies, data file can also be specified.
- -t           Max CPU number to use, defult: 4.
+ -t           Max CPU number to use, default: 4.
 
 =head2 Busco setting
 
- -l           Busco lineage dataset, odb9 was supported, busco will not run without lineage dataset.
+ -l           Busco lineage dataset, odb9(https://busco-archive.ezlab.org/v3/) is supported, busco will not run without lineage dataset.
  -s           Species used for augustus training in busco.
 
 =head1 Note: 
@@ -57,9 +57,7 @@ use FindBin qw($RealBin);
 use Data::Dumper;
 
 my $task = 'gaap pipe';
-my $mode = 1;
-
-
+my $mode = 0;
 
 my %data = (
 	assembly   => '',
@@ -105,7 +103,7 @@ my $prefix_out = "$dir/$prefix" if $dir;
 my %software = ();
 my %result = ();
 my @cmd = ();
-my $checkpoint = 0x000;
+my $checkpoint = 0x0000;
 
 parse_conf($conf, \%data, \%software);
 
@@ -144,7 +142,7 @@ print "\n";
 
 ##cmd list
 #genome stat
-push @cmd, [0x000, 0x001, "[$task] Now getting genome assembly informations.\n",
+push @cmd, [0x0000, 0x0001, "[$task] Now getting genome assembly informations.\n",
             "$RealBin/basic.pl $data{assembly} > ${prefix_out}_genome_stat.txt"];
 #TGS mapping
 if (@{$data{TGS}->{data}}) {
@@ -156,14 +154,14 @@ if (@{$data{TGS}->{data}}) {
 	$tgs_cmd .= "-o $prefix ";
 	$tgs_cmd .= "--minimap2 $software{minimap2}->{minimap2} "if $software{minimap2}->{minimap2};
     $tgs_cmd .= "--samtools $software{samtools}->{samtools} "if $software{samtools}->{samtools};
-	push @cmd, [0x000, 0x800, "[$task] Now mapping TGS reads.\n", $tgs_cmd];
+	push @cmd, [0x0000, 0x8000, "[$task] Now mapping TGS reads.\n", $tgs_cmd];
 	
 	#mapping rate
 	my $flg_cmd = "$RealBin/mapping_rate.pl -b $bam_tgs ";
 	$flg_cmd .= "-t $threads "   if $threads;
 	$flg_cmd .= "-o $maprate_tgs ";
 	$flg_cmd .= "--samtools $software{samtools}->{samtools} " if $software{samtools}->{samtools};
-	push @cmd, [0x800, 0x002, "[$task] Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
+	push @cmd, [0x8000, 0x0002, "[$task] Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
 	
 	#breakpoint detect
 	my $bkp_cmd = "$RealBin/breakpoint_detected.pl -b $bam_tgs ";
@@ -171,7 +169,7 @@ if (@{$data{TGS}->{data}}) {
 	$bkp_cmd .= "-d $bkp_dir ";
 	$bkp_cmd .= "-o $prefix ";
 	$bkp_cmd .= "--samtools $software{samtools}->{samtools} " if $software{samtools}->{samtools};
-	push @cmd, [0x800, 0x002, "[$task] Now detecting breakpoints.\n", $bkp_cmd];
+	push @cmd, [0x8000, 0x0004, "[$task] Now detecting breakpoints.\n", $bkp_cmd];
 }
 
 #NGS mapping
@@ -188,14 +186,14 @@ if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
 	$ngs_cmd .= "-o $prefix ";
 	$ngs_cmd .= "--bwa $software{bwa}->{bwa} " if $software{bwa}->{bwa};
 	$ngs_cmd .= "--samtools $software{samtools}->{samtools} " if $software{samtools}->{samtools};
-	push @cmd, [0x000, 0x400, "[$task] Now mapping NGS reads.\n", $ngs_cmd];
+	push @cmd, [0x0000, 0x4000, "[$task] Now mapping NGS reads.\n", $ngs_cmd];
 	
 	#mapping rate
 	my $flg_cmd = "$RealBin/mapping_rate.pl -b $bam_ngs ";
 	$flg_cmd .= "-t $threads "   if $threads;
 	$flg_cmd .= "-o $maprate_ngs ";
 	$flg_cmd .= "--samtools $software{samtools}->{samtools} " if $software{samtools}->{samtools};
-	push @cmd, [0x400, 0x002, "[$task] Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
+	push @cmd, [0x4000, 0x0008, "[$task] Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
 	
 	my $var_cmd = "$RealBin/var_calling.pl -r $data{assembly} ";
 	$var_cmd .= "-b $bam_ngs ";
@@ -204,7 +202,7 @@ if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
 	$var_cmd .= "-o $prefix ";
 	$var_cmd .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
 	$var_cmd .= "--samtools $software{samtools}->{samtools} " if $software{samtools}->{samtools};
-	push @cmd, [0x400, 0x100, "[$task] Now calling variants.\n", $var_cmd];
+	push @cmd, [0x4000, 0x1000, "[$task] Now calling variants.\n", $var_cmd];
 }
 
 #snv_coverage dot-plot
@@ -214,7 +212,7 @@ $sc_tgs_cmd   .= "-o $prefix ";
 $sc_tgs_cmd   .= "--bedtools $software{bedtools}->{bedtools} " if $software{bedtools}->{bedtools};
 $sc_tgs_cmd   .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
 $sc_tgs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
-push @cmd, [0x900, 0x008, "[$task] Now plot snv_coverage dot-plot useing tgs bam file.\n", $sc_tgs_cmd];
+push @cmd, [0x9000, 0x0010, "[$task] Now plot snv_coverage dot-plot useing tgs bam file.\n", $sc_tgs_cmd];
 
 my $sc_ngs_cmd = "$RealBin/cov_snp_dot.pl -b $bam_ngs -v $vcf ";
 $sc_ngs_cmd   .= "-d $snvcov_ngs ";
@@ -222,7 +220,7 @@ $sc_ngs_cmd   .= "-o $prefix ";
 $sc_ngs_cmd   .= "--bedtools $software{bedtools}->{bedtools} " if $software{bedtools}->{bedtools};
 $sc_ngs_cmd   .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
 $sc_ngs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
-push @cmd, [0x500, 0x010, "[$task] Now plot snv_coverage dot-plot useing ngs bam file.\n", $sc_ngs_cmd];
+push @cmd, [0x5000, 0x0020, "[$task] Now plot snv_coverage dot-plot useing ngs bam file.\n", $sc_ngs_cmd];
 
 #Trans mapping
 if (@{$data{TRANS}->{data1}} or @{$data{TRANS}->{data2}}) {
@@ -240,14 +238,14 @@ if (@{$data{TRANS}->{data1}} or @{$data{TRANS}->{data2}}) {
 	$tr_cmd .= "--hisat2 $software{hisat2}->{hisat2} " if $software{hisat2}->{hisat2};
 	$tr_cmd .= "--hisat2_build $software{hisat2_build}->{hisat2_build} " if $software{hisat2_build}->{hisat2_build};
 	$tr_cmd .= "--samtools $software{samtools}->{samtools} " if $software{samtools}->{samtools};
-	push @cmd, [0x000, 0x200, "[$task] Now mapping transcripts reads.\n", $tr_cmd];
+	push @cmd, [0x0000, 0x2000, "[$task] Now mapping transcripts reads.\n", $tr_cmd];
 	
 	#mapping rate
 	my $flg_cmd = "$RealBin/mapping_rate.pl -b $bam_trans ";
 	$flg_cmd .= "-t $threads "   if $threads;
 	$flg_cmd .= "-o $maprate_trans ";
 	$flg_cmd .= "--samtools $software{samtools}->{samtools} " if $software{samtools}->{samtools};
-	push @cmd, [0x200, 0x002, "[$task] Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
+	push @cmd, [0x2000, 0x0040, "[$task] Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
 }
 
 #run busco
@@ -261,7 +259,7 @@ if ($busco_lineage) {
 	$busco_cmd .= "--tblastn   $software{tblastn}->{tblastn}     " if $software{tblastn}->{tblastn};    
 	$busco_cmd .= "--augustus  $software{augustus}->{augustus}   " if $software{augustus}->{augustus};
 	$busco_cmd .= "--hmmsearch $software{hmmsearch}->{hmmsearch} " if $software{hmmsearch}->{hmmsearch};
-	push @cmd, [0x000, 0x020, "[$task] Now running busco.\n", $busco_cmd];
+	push @cmd, [0x0000, 0x0080, "[$task] Now running busco.\n", $busco_cmd];
 }
 	
 ##running
@@ -279,9 +277,9 @@ if ($mode == 1) {
 		if (($checkpoint & $_->[0]) == $_->[0]) {
 			print $_->[2];
 			if (system $_->[3]) {
-				"[$task] Running with error!\n";
+				print "[$task] Running with error!\n\n";
 			}else {
-				print "[$task] Running completed!\n";
+				print "[$task] Running completed!\n\n";
 				$checkpoint |= $_->[1];
 			}
 		}

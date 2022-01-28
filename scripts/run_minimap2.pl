@@ -2,8 +2,9 @@
 
 use strict;
 use Getopt::Long;
+use File::Basename;
 
-my $task = "run_minimap2.pl";
+my $task = "run_minimap2";
 my $sys_run = 0;
 
 my $usage = qq (
@@ -24,19 +25,19 @@ Options:
          --samtools   Path to samtools.
 ); 
 
-my ($assembly,$file_list,$reads_type,$threads,$dir,$prefix_out,$help,$minimap2,$samtools);
+my ($assembly,$file_list,$reads_type,$threads,$dir,$prefix,$help,$minimap2,$samtools);
 my @sequences = ();
 GetOptions(
-	"r:s"      => \$assembly,
-	"i:s"      => \@sequences,     #FASTQ or FASTA
-	"l|list:s" => \$file_list,
-	"x:s"      => \$reads_type,	   #(ont,pb)
-	"t:i"      => \$threads,
-	"d:s"      => \$dir,
-	"o:s"      => \$prefix_out,
-	"h"        => \$help,
-	"minimap2" => \$minimap2,
-	"samtools" => \$samtools,
+	"r:s"        => \$assembly,
+	"i:s"        => \@sequences,     #FASTQ or FASTA
+	"l|list:s"   => \$file_list,
+	"x:s"        => \$reads_type,	   #(ont,pb)
+	"t:i"        => \$threads,
+	"d:s"        => \$dir,
+	"o:s"        => \$prefix,
+	"h"          => \$help,
+	"minimap2:s" => \$minimap2,
+	"samtools:s" => \$samtools,
 );
 
 ##Check input files.
@@ -44,20 +45,24 @@ unless ($assembly && (@sequences || $file_list)) {
 	die $usage;
 }
 
-if ($dir and ! -e $dir){
+$dir = "gaap_${task}_$$" unless $dir;
+if (! -e $dir){
 	if (system "mkdir -p $dir"){
-		die ("[$task]Error! Can't make directory: $dir.\n");
+		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
 }
+$prefix = "tgs_mapping_$$" unless $prefix;
+my $prefix_out = "$dir/$prefix" if $dir;
 
-$prefix_out = "output" unless $prefix_out;
-$prefix_out = "$dir/$prefix_out" if $dir;
+my $out_bam = "${prefix_out}_TGS_mapping.bam";
 my @file_list = ();
 
 ##Check software.
+print $minimap2,"\n";print $samtools,"\n";
 $minimap2 = $minimap2 ? check_software("minimap2", $minimap2) : check_software("minimap2");
 die "[$task] Error! Minimap2 is not found.
 [$task] Check your config file or set it in your environment.\n" if $minimap2 eq "-1";
+
 $samtools = $samtools ? check_software("samtools", $samtools) : check_software("samtools");
 die "[$task] Error! Samtools is not found.
 [$task] Check your config file or set it in your environment.\n" if $samtools eq "-1";
@@ -73,6 +78,7 @@ if ($file_list){
 		push @file_list , $_;
 	}
 }
+
 
 my $minimap2_cmd = "$minimap2 ";
 $minimap2_cmd .= "--secondary=no -t $threads " if $threads;
@@ -126,7 +132,7 @@ sub check_software {
 	my $software = shift;
 	my $path = shift if @_;
 	if ( $path ) {
-		if ( basename($path) eq "software" && -X $path ) {
+		if ( basename($path) eq $software && -X $path ) {
 			$software = $path;
 		}else {
 			return "-1";

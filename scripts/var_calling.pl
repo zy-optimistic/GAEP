@@ -1,6 +1,7 @@
 #! /usr/bin/perl -w
 
 use strict;
+use File::Basename;
 use Getopt::Long;
 use threads;
 use Thread::Semaphore;
@@ -42,6 +43,7 @@ if ( $dir ){
 }
 
 ##test software
+print $bcftools;
 $bcftools = $bcftools ? check_software("bcftools", $bcftools) : check_software("bcftools");
 die "[$task] Error! Bcftools is not found. 
 [$task] Check your config file or set it in your environment.\n" if $bcftools eq "-1";
@@ -149,7 +151,7 @@ sub check_software {
 	my $software = shift;
 	my $path = shift if @_;
 	if ( $path ) {
-		if ( basename($path) eq "software" && -X $path ) {
+		if ( basename($path) eq $software && -X $path ) {
 			$software = $path;
 		}else {
 			return "-1";

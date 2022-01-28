@@ -10,7 +10,7 @@ Getopt::Long::Configure qw( bundling no_ignore_case );
 my $task = "run_bwa";
 my $sys_run = 0;
 
-my ($assembly,@reads1,@reads2,$threads,$dir,$prefix_out,$index,$file_list,$bwa,$samtools);
+my ($assembly,@reads1,@reads2,$threads,$dir,$prefix,$index,$file_list,$bwa,$samtools);
 GetOptions(
 	"r:s"        => \$assembly,
 	"i:s"        => \@reads1,
@@ -18,7 +18,7 @@ GetOptions(
 	"l|list:s"   => \$file_list,
 	"t:i"        => \$threads,
 	"d:s"        => \$dir,
-	"o|output:s" => \$prefix_out,    #prefix of output files
+	"o|output:s" => \$prefix,    #prefix of output files
 	"bwa:s"      => \$bwa,
 	"samtools:s" => \$samtools
 );
@@ -32,7 +32,7 @@ if (! -e $dir){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix = "bkp_output_$$" unless $prefix;
+$prefix = "ngs_mapping_$$" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
 
 ##check software

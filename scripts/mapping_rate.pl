@@ -2,13 +2,15 @@
 
 use strict;
 use Getopt::Long;
+use File::Basename;
 
 my $task = "mapping_rate";
 
-my ($bam, $threads, $out_file);
+my ($bam, $threads, $out_file, $samtools);
 GetOptions(
 	"b:s"            => \$bam,
 	"o:s"            => \$out_file,
+	"t:i"            => \$threads,
 	"--samtools:s"   => \$samtools,
 );
 die "No bam file was input.\n" if !$bam;
@@ -19,7 +21,7 @@ die "[$task] Error! Samtools was not found.
 
 $out_file = "$bam.flagstat_$$.txt" if !$out_file;
 
-my $cmd = "$samtools ";
+my $cmd = "$samtools flagstat ";
 $cmd .= "-@ $threads " if $threads;
 $cmd .= "$bam ";
 $cmd .= "> $out_file";
