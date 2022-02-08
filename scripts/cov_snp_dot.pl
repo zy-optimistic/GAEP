@@ -74,7 +74,7 @@ if (! -e $dir){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix = "bkp_output_$$" unless $prefix;
+$prefix = "var_output_$$" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
 
 
@@ -119,6 +119,7 @@ my $seq_len = read_header($bam);
 my $tolen = 0;
 $tolen += $_ for @$seq_len;
 $win_size = int($tolen/5000) if !$win_size;
+print STDERR "[$task] Make windows in length $win_size.\n";
 ##--make windiows--##
 if ( ! $fwindows ) {
 	$fwindows = "$dir/${prefix}_${win_size}_windows.txt";
@@ -166,7 +167,7 @@ close COV;
 close OUT;
 
 my $plot_cmd = "$Rscript $RealBin/snp_coverage_dotplot.R $hist $prefix_out $type";
-_system($plot_cmd);
+_system($plot_cmd, $mode);
 
 #---------------------------------Subroutine-----------------------------------#
 sub read_header {
