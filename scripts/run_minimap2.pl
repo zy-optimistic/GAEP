@@ -58,7 +58,6 @@ my $out_bam = "${prefix_out}_TGS_mapping.bam";
 my @file_list = ();
 
 ##Check software.
-print $minimap2,"\n";print $samtools,"\n";
 $minimap2 = $minimap2 ? check_software("minimap2", $minimap2) : check_software("minimap2");
 die "[$task] Error! Minimap2 is not found.
 [$task] Check your config file or set it in your environment.\n" if $minimap2 eq "-1";
@@ -90,13 +89,13 @@ foreach (@file_list){
 	$count ++;
 	#run minimap2
 	if (! $reads_type) {
-		$minimap2_cmd .= "$assembly $_ -o ${prefix_out}_${count}.sam"; 
+		$minimap2_cmd .= "-L -a $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}elsif ($reads_type	eq 'ont'){
 		$minimap2_cmd .= "-L -ax map-ont $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}elsif ($reads_type	eq 'pb'){
-		$minimap2_cmd .= "-ax map-pb $assembly $_ -o ${prefix_out}_${count}.sam"; 
+		$minimap2_cmd .= "-L -ax map-pb $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}elsif ($reads_type	eq 'ccs'){
-		$minimap2_cmd .= "-ax sam20 $assembly $_ -o ${prefix_out}_${count}.sam"; 
+		$minimap2_cmd .= "-L -ax sam20 $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}else {
 		$minimap2_cmd .= "$assembly $_ -o ${prefix_out}_${count}.sam";
 	}
@@ -106,7 +105,7 @@ foreach (@file_list){
 }
 
 ##sort
-my $sort_cmd = "samtools sort -O BAM ";
+my $sort_cmd = "samtools sort -m 2G -O BAM ";
 $sort_cmd .= "-@ $threads " if $threads;
 $temp = $sort_cmd;
 foreach (@sam_list){

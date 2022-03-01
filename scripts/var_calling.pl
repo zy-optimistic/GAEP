@@ -8,7 +8,7 @@ use Thread::Semaphore;
 use Thread::Queue;
 
 my $task = "var_calling";
-my $sys_run = 0;
+my $mode = 0;
 
 my $threads = 4;
 my ($assembly,$bam,$dir,$prefix_out,$markduped,$bcftools,$samtools);
@@ -43,7 +43,6 @@ if ( $dir ){
 }
 
 ##test software
-print $bcftools;
 $bcftools = $bcftools ? check_software("bcftools", $bcftools) : check_software("bcftools");
 die "[$task] Error! Bcftools is not found. 
 [$task] Check your config file or set it in your environment.\n" if $bcftools eq "-1";
@@ -60,17 +59,17 @@ my $semaphore = Thread::Semaphore->new($threads);
 
 #bam markdup
 if (! $markduped) {
-	print STDERR "[$task] Run bcftools markdup to mark duplications.\n";
+	print STDERR "[$task] Run samtools markdup to mark duplications.\n";
 	my $markdup_cmd = "$samtools markdup ";
 	$markdup_cmd .= "-@ $threads " if $threads;
 	$markdup_cmd .= "$bam $markdup";
-	_system($markdup_cmd, $sys_run);
+	_system($markdup_cmd, $mode);
 	$bam = $markdup;
 	#index
 	my $index_cmd = "samtools index ";
 	$index_cmd .= "-@ $threads " if $threads;
 	$index_cmd .= "$bam";
-	_system($index_cmd, $sys_run);
+	_system($index_cmd, $mode);
 }
 
 unless (-s "${bam}.bai"){
@@ -95,7 +94,7 @@ $semaphore->up($threads);
 
 ##merge all vcfs into one
 my $concat = "bcftools concat $prefix_out.*.flt.vcf > $var_result";
-_system($concat, $sys_run);
+_system($concat, $mode);
 
 
 ##---------------------------------subroutine---------------------------------##
@@ -116,11 +115,11 @@ sub snv_calling {
 	my $call_snp = "$bcftools mpileup -r $ctg ";
 	$call_snp .= " -a SP -f $assembly $bam | $bcftools call ";
 	$call_snp .= "-vm -f GQ -o $var_call";
-	_system($call_snp, $sys_run);
+	_system($call_snp, $mode);
 	##filter
 	my $filter_cmd = "$bcftools filter ";
 	$filter_cmd .= " -e '%QUAL<10 || DP <= 3' $var_call -o $var_flt";
-	_system($filter_cmd, $sys_run);
+	_system($filter_cmd, $mode);
 }
 
 sub read_header {
@@ -139,9 +138,9 @@ sub _system {
 	my $cmd = shift;
 	my $mode = shift if @_;
 	if ( $mode == 1 ) {
-		print $cmd,"\n";
+		print $cmd, "\n";
 	}else {
-		print $cmd,"\n";
+		print $cmd, "\n";
 		die "[$task] Can't run \"$cmd\".\n" if ( system $cmd );
 	}
 	return;

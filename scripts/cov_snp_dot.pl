@@ -9,11 +9,6 @@
   Generate a dotplot about reads coverage and SNP density of windows of a genome
   sequences.
 
-=head1 Version
-
-  Author: Zhang Yong
-  Date: 2021.5.18
-
 =head1 Usage
  
   cov_snp_dot.pl
@@ -25,12 +20,19 @@
     -b                  path to bam file
     -v                  path to vcf/bcf file
     -s                  windows size, defult 100,000
-    -p                  plot type (pdf,png)
+    -p                  plot format (pdf,png)
     -o                  out prefix
     -d                  out directory
     --bedtools          path to bedtools
     --bcftools          path to bcftools
     -h                  print help information
+
+=head1 Usage
+ 
+  To generate SNV-cov dot plot, gaap need two types of input file. One of them 
+  is the vcf file includes the SNV called from alignment between NGS reads and 
+  contigs. Another one is the bam file of alignment 
+  
 
 =cut
 
@@ -44,19 +46,29 @@ Getopt::Long::Configure qw( bundling no_ignore_case );
 my $task = "cov_snp_dot";
 my $mode = 0;
 
-my ($assembly,@reads1,@reads2,$file_list,$threads,$fwindows,$bam,$vcf,$win_size,$prefix,$dir,$bedtools,$bcftools,$Rscript,$help);
-my $type = 'pdf';
+my ($assembly, @reads1, @reads2, $ngs_list,
+    @long_reads, $tgs_list, $reads_type, $ngs_bam,
+    $threads, $fwindows, $bam, $vcf, $min_ctg, $win_size,
+	$prefix, $dir, $bedtools, $bcftools, 
+	$Rscript, $help);
+	
+my $format = 'pdf';
 GetOptions(
     "r:s"        => \$assembly,
     "i:s"        => \@reads1,
     "I:s"        => \@reads2,
-    "l|list:s"   => \$file_list,
+    "nl:s"       => \$ngs_list,
+	"l:s"        => \@long_reads,
+	"tl:s"       => \$tgs_list,
+	"x:s"        => \$reads_type,	   #(ont,pb)
 	"t:i"        => \$threads,
-	"w:s"        => \$fwindows,
 	"b:s"        => \$bam,
+	"n:s"        => \$ngs_bam,
 	"v:s"        => \$vcf,
+	"m:i"        => \$min_ctg,
+	"w:s"        => \$fwindows,
 	"s:i"        => \$win_size,
-	"p:s"        => \$type,
+	"f:s"        => \$format,
 	"o:s"        => \$prefix,
  	"d:s"        => \$dir,
 	"bedtools:s" => \$bedtools,
@@ -64,9 +76,30 @@ GetOptions(
 	"Rscript:s"  => \$Rscript,
 	"h"          => \$help
 );
-
 die `pod2text $0` if $help;
-die `pod2text $0` if !@reads1 && !@reads2 && !$file_list && !$bam;
+if (!$assembly) {
+	die "[$task] Error! Can't find the assembly file.", `pod2text $0`;
+
+}
+if (!$vcf) {
+	if (!$ngs_bam) {
+		if (!@reads1 && !@reads2 && !$ngs_list) {
+			print STDERR "[$task] Error! No vcf file!";
+			die `pod2text $0`;
+		}
+	}
+}
+if (!$bam) {
+	if (!$ngs_bam) {
+		if (!@reads1 && !@reads2 && !$ngs_list) {
+			if (!@long_reads && !$tgs_list) {
+				print STDERR "[$task] Error! No bam file!";
+				die `pod2text $0`;	
+			}
+		}
+	}
+		
+}
 
 $dir = "gaap_${task}_$$" unless $dir;
 if (! -e $dir){
@@ -77,7 +110,6 @@ if (! -e $dir){
 $prefix = "var_output_$$" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
 
-
 my $hist = "$prefix_out.${task}_$$.hist";
 
 ##Check software.
@@ -87,37 +119,55 @@ die "[$task] Error! bcftools is not found.
 $bedtools = $bedtools ? check_software("bedtools", $bedtools) : check_software("bedtools");
 die "[$task] Error! bedtools is not found.
 [$task] Check your config file or set it in your environment.\n" if $bedtools eq "-1";
-$Rscript = $Rscript ? check_software("Rscript", $Rscript) : check_software("Rscript");
-die "[$task] Error! Rscript is not found.
-[$task] Check your config file or set it in your environment.\n" if $Rscript eq "-1";
 
-if (!$vcf && !$bam) {
-	system "mkdir -p $dir/../mapping/NGS_mapping/";
-	my $map_cmd = "$RealBin/run_bwa.pl -r $assembly ";
-	for (my $i = 0; $i <= $#reads1 && $i <= $#reads2; $i++) {
-		$map_cmd .= "-i $reads1[$i] -I $reads2[$i] ";
+if (!$vcf) {
+	if (!$ngs_bam) {
+		system "mkdir -p $dir/mapping/NGS_mapping/";
+		my $map_cmd = "$RealBin/run_bwa.pl -r $assembly ";
+		for (my $i = 0; $i <= $#reads1 && $i <= $#reads2; $i++) {
+			$map_cmd .= "-i $reads1[$i] -I $reads2[$i] ";
+		}
+		$map_cmd .= "-l $ngs_list " if $ngs_list;
+		$map_cmd .= "-t $threads "   if $threads;
+		$map_cmd .= "-d $dir/mapping/NGS_mapping ";
+		$map_cmd .= "-o $prefix ";
+		_system($map_cmd, $mode);
+		$ngs_bam = "$dir/mapping/NGS_mapping/$prefix.paired.sorted.bam";
 	}
-	$map_cmd .= "-l $file_list " if $file_list;
-	$map_cmd .= "-t $threads "   if $threads;
-	$map_cmd .= "-d $dir/../mapping/NGS_mapping ";
-	$map_cmd .= "-o $prefix ";
-	_system($map_cmd, $mode);
-	$bam = "$dir/../mapping/NGS_mapping/$prefix.paired.sorted.bam";
-	
-	system "mkdir -p $dir/../variants/";
+	system "mkdir -p $dir/variants/";
 	my $var_cmd = "$RealBin/var_calling.pl -r $assembly ";
-	$var_cmd .= "-b $bam ";
+	$var_cmd .= "-b $ngs_bam ";
 	$var_cmd .= "-t $threads "   if $threads;
-	$var_cmd .= "-d $dir/../variants/ ";
+	$var_cmd .= "-d $dir/variants/ ";
 	$var_cmd .= "-o $prefix ";
 	_system($var_cmd, $mode);
-	$vcf = "$dir/../variants/$prefix.flt.vcf"
+	$vcf = "$dir/variants/$prefix.flt.vcf";
 }
 
-##--read length--##
-my $seq_len = read_header($bam);
+if (!$bam) {
+	system "mkdir -p $dir/mapping/TGS_mapping/";
+	if (@long_reads) {
+		my $tgs_cmd = "$RealBin/run_minimap2.pl -r $assembly ";
+		$tgs_cmd .= "-i $_ " for @long_reads;
+		$tgs_cmd .= "-x $reads_type " if $reads_type;
+		$tgs_cmd .= "-t $threads "   if $threads;
+		$tgs_cmd .= "-d $dir/mapping/TGS_mapping/ ";
+		$tgs_cmd .= "-o $prefix ";
+		_system($tgs_cmd, $mode);
+		$bam = "$dir/mapping/TGS_mapping/${prefix}_TGS_mapping.bam";
+	}elsif (-e $ngs_bam) {
+		$bam = $ngs_bam;
+	}else {
+		print "[$task] Can't find a bam file.\n";
+		die `pod2text $0`;
+	}
+}
+
+##--get length--##
+$min_ctg = $min_ctg ? $min_ctg : 0;
+my $seq_len = read_header($bam, $min_ctg);
 my $tolen = 0;
-$tolen += $_ for @$seq_len;
+$tolen += $_->[1] for @$seq_len;
 $win_size = int($tolen/5000) if !$win_size;
 print STDERR "[$task] Make windows in length $win_size.\n";
 ##--make windiows--##
@@ -166,7 +216,11 @@ while (<COV>) {
 close COV;
 close OUT;
 
-my $plot_cmd = "$Rscript $RealBin/snp_coverage_dotplot.R $hist $prefix_out $type";
+##plot
+$Rscript = $Rscript ? check_software("Rscript", $Rscript) : check_software("Rscript");
+die "[$task] Error! Rscript is not found.
+[$task] Check your config file or set it in your environment.\n" if $Rscript eq "-1";
+my $plot_cmd = "$Rscript $RealBin/snp_coverage_dotplot.R $hist $prefix_out $format";
 _system($plot_cmd, $mode);
 
 #---------------------------------Subroutine-----------------------------------#
@@ -176,7 +230,10 @@ sub read_header {
         my $pip = "samtools view -H $bam ";
         open my $BAM, '-|', $pip || die "Fail to read header of $bam.\n";
         while (<$BAM>) {
-                /^\@SQ\s+SN:(\S+)\s+LN:(\d+)/ ? push @$length, [$1,$2] : next;
+            if (/^\@SQ\s+SN:(\S+)\s+LN:(\d+)/){
+				push @$length, [$1,$2] if ($2 >= $min_ctg);
+				
+			}
         }
         die "Fail to read header of $bam.\n" unless (@{$length});
         return $length;

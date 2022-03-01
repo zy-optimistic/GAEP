@@ -68,6 +68,7 @@ $ENV{BUSCO_CONFIG_FILE}    = $BUSCO_CONFIG_FILE;
 my $busco_cmd = "$RealBin/../third_party/busco/build/run_BUSCO.py -m genome ";
 $busco_cmd   .= "-i $assembly ";
 $busco_cmd   .= "-l $lineage ";
+$busco_cmd   .= "-sp $species " if $species;;
 $busco_cmd   .= "-o $prefix_out ";
 $busco_cmd   .= "-c $threads " if $threads;
 
