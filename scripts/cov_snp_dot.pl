@@ -78,7 +78,7 @@ GetOptions(
 );
 die `pod2text $0` if $help;
 if (!$assembly) {
-	die "[$task] Error! Can't find the assembly file.", `pod2text $0`;
+	die "[$task] Error! Can't find the assembly file.\n", `pod2text $0`;
 
 }
 if (!$vcf) {
@@ -123,7 +123,7 @@ die "[$task] Error! bedtools is not found.
 if (!$vcf) {
 	if (!$ngs_bam) {
 		system "mkdir -p $dir/mapping/NGS_mapping/";
-		my $map_cmd = "$RealBin/run_bwa.pl -r $assembly ";
+		my $map_cmd = "perl $RealBin/run_bwa.pl -r $assembly ";
 		for (my $i = 0; $i <= $#reads1 && $i <= $#reads2; $i++) {
 			$map_cmd .= "-i $reads1[$i] -I $reads2[$i] ";
 		}
@@ -135,7 +135,7 @@ if (!$vcf) {
 		$ngs_bam = "$dir/mapping/NGS_mapping/$prefix.paired.sorted.bam";
 	}
 	system "mkdir -p $dir/variants/";
-	my $var_cmd = "$RealBin/var_calling.pl -r $assembly ";
+	my $var_cmd = "perl $RealBin/var_calling.pl -r $assembly ";
 	$var_cmd .= "-b $ngs_bam ";
 	$var_cmd .= "-t $threads "   if $threads;
 	$var_cmd .= "-d $dir/variants/ ";
@@ -147,7 +147,7 @@ if (!$vcf) {
 if (!$bam) {
 	system "mkdir -p $dir/mapping/TGS_mapping/";
 	if (@long_reads) {
-		my $tgs_cmd = "$RealBin/run_minimap2.pl -r $assembly ";
+		my $tgs_cmd = "perl $RealBin/run_minimap2.pl -r $assembly ";
 		$tgs_cmd .= "-i $_ " for @long_reads;
 		$tgs_cmd .= "-x $reads_type " if $reads_type;
 		$tgs_cmd .= "-t $threads "   if $threads;

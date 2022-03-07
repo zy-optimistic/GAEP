@@ -24,7 +24,7 @@ GetOptions(
 );
 
 ##Check input files and directory.
-die ("[$task]Error!Please input your assembly file.\n") unless $assembly;
+die ("[$task] Error!Please input your assembly file.\n") unless $assembly;
 
 $dir = "gaap_${task}_$$" unless $dir;
 if (! -e $dir){

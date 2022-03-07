@@ -72,11 +72,11 @@ if (! $markduped) {
 	_system($index_cmd, $mode);
 }
 
-unless (-s "${bam}.bai"){
+if (!-s "${bam}.bai" && !-s "${bam}.csi"){
 	my $cmd = "$samtools index ";
 	$cmd   .= "-@ $threads " if $threads;
 	$cmd   .= "$bam";
-	_system($cmd);
+	_system($cmd, $mode);
 }
 
 for (sort keys %seq_len) {

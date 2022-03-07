@@ -93,10 +93,11 @@ if (!$vcf && !$bam) {
 
 my $mean_depth = 0;
 my $total_len  = 0;
-my $map_len = 0;
-my $var_num = 0;
-my $accuracy = 0;
-my $QV = 0;
+my $map_len    = 0;
+my $var_num    = 0;
+my $err_base   = 0;
+my $accuracy   = 0;
+my $QV         = 0;
 
 my $out_file = "$prefix_out.base.qv";
 ##-----------------------------------main-------------------------------------##
@@ -140,12 +141,21 @@ while (<VCF>) {
 }
 close VCF;
 
-$accuracy = $var_num/$map_len;
-$QV = sprintf("%.2f", -10*log($accuracy)/log(10));
-$accuracy = 1-$accuracy;
+$err_base = $var_num/$map_len;
+if ($err_base==0) {
+	$QV = 0;
+	print "[$task] No error base detected. QV can't be caculated.\n";
+}else {
+	$QV = sprintf("%.2f", -10*log($err_base)/log(10));
+}
+$accuracy = 1-$err_base;
 
 open OUT, '>', $out_file or die "[$task] Can't open such file: $out_file.\n";
-print OUT "QV\t$QV\n";
+if ($QV == 0) {
+	print OUT "No error base detected. QV can't be caculated.\n";
+}else {
+	print OUT "QV\t$QV\n";
+}
 close OUT;
 ##---------------------------------subroutine---------------------------------##
 

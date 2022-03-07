@@ -13,7 +13,7 @@
 
 =head2 Necessary
 
- -f assembly
+ -r assembly
  
 =head2 TGS data
 
@@ -54,7 +54,7 @@
 use strict;
 use Getopt::Long;
 use FindBin qw($RealBin);
-use Data::Dumper;
+#use Data::Dumper;
 
 my $task = 'gaap pipe';
 my $mode = 0;
@@ -105,10 +105,12 @@ my %result = ();
 my @cmd = ();
 my $checkpoint = 0x0000;
 
-parse_conf($conf, \%data, \%software);
+if ($conf) {
+	parse_conf($conf, \%data, \%software);
+}
 
-print Dumper(\%data);
-print Dumper(\%software);
+#print Dumper(\%data);
+#print Dumper(\%software);
 ##path
 my $geno_stat     = "${prefix_out}_genome_stat.txt";
 
@@ -206,21 +208,26 @@ if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
 }
 
 #snv_coverage dot-plot
-my $sc_tgs_cmd = "$RealBin/cov_snp_dot.pl -b $bam_tgs -v $vcf ";
-$sc_tgs_cmd   .= "-d $snvcov_tgs ";
-$sc_tgs_cmd   .= "-o $prefix ";
-$sc_tgs_cmd   .= "--bedtools $software{bedtools}->{bedtools} " if $software{bedtools}->{bedtools};
-$sc_tgs_cmd   .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
-$sc_tgs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
-push @cmd, [0x9000, 0x0010, "[$task] Now plot snv_coverage dot-plot useing tgs bam file.\n", $sc_tgs_cmd];
+if (-e $bam_tgs) {
+	my $sc_tgs_cmd = "$RealBin/cov_snp_dot.pl -r $data{assembly} -b $bam_tgs -v $vcf ";
+	$sc_tgs_cmd   .= "-d $snvcov_tgs ";
+	$sc_tgs_cmd   .= "-o $prefix ";
+	$sc_tgs_cmd   .= "--bedtools $software{bedtools}->{bedtools} " if $software{bedtools}->{bedtools};
+	$sc_tgs_cmd   .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
+	$sc_tgs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
+	push @cmd, [0x9000, 0x0010, "[$task] Now plot snv_coverage dot-plot using tgs bam file.\n", $sc_tgs_cmd];
+}elsif (-e $bam_ngs) {
+	my $sc_ngs_cmd = "$RealBin/cov_snp_dot.pl -r $data{assembly} -b $bam_ngs -v $vcf ";
+	$sc_ngs_cmd   .= "-d $snvcov_ngs ";
+	$sc_ngs_cmd   .= "-o $prefix ";
+	$sc_ngs_cmd   .= "--bedtools $software{bedtools}->{bedtools} " if $software{bedtools}->{bedtools};
+	$sc_ngs_cmd   .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
+	$sc_ngs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
+	push @cmd, [0x5000, 0x0020, "[$task] Now plot snv_coverage dot-plot using ngs bam file.\n", $sc_ngs_cmd];
+}
 
-my $sc_ngs_cmd = "$RealBin/cov_snp_dot.pl -b $bam_ngs -v $vcf ";
-$sc_ngs_cmd   .= "-d $snvcov_ngs ";
-$sc_ngs_cmd   .= "-o $prefix ";
-$sc_ngs_cmd   .= "--bedtools $software{bedtools}->{bedtools} " if $software{bedtools}->{bedtools};
-$sc_ngs_cmd   .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
-$sc_ngs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
-push @cmd, [0x5000, 0x0020, "[$task] Now plot snv_coverage dot-plot useing ngs bam file.\n", $sc_ngs_cmd];
+
+
 
 #Trans mapping
 if (@{$data{TRANS}->{data1}} or @{$data{TRANS}->{data2}}) {

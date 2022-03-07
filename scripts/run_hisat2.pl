@@ -3,7 +3,6 @@
 use strict;
 use File::Basename;
 use Getopt::Long;
-use Data::Dumper;
 Getopt::Long::Configure qw(bundling no_ignore_case);
 
 my $task = "run_hisat2";
@@ -73,7 +72,6 @@ if ( @reads1 && @reads2 ) {
 }elsif ( @reads2 ) {
 	push @{ $flist{single} }, @reads2;
 }
-print Dumper(\%flist);
 
 my $out_file = "${prefix_out}_TRANS_mapping.bam";
 

@@ -1,5 +1,5 @@
-#! /usr/bin/perl -w
-
+#!/usr/bin/env perl
+use warnings;
 use strict;
 use Getopt::Long;
 use Data::Dumper;
@@ -32,17 +32,17 @@ die $usage unless $command;
 
 ##------------------------------------main------------------------------------##
 if ( $command eq 'pipe' ) {
-	system "$RealBin/scripts/pipeline.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/pipeline.pl @ARGV" and exit(1);
 }elsif ( $command eq 'stat' ) {
-	system "$RealBin/scripts/basic.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/basic.pl @ARGV" and exit(1);
 }elsif ( $command eq 'macc' ) {
-	system "$RealBin/scripts/stat_accuracy_base.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/stat_accuracy_base.pl @ARGV" and exit(1);
 }elsif ( $command eq 'bkp' ) {
-	system "$RealBin/scripts/breakpoint_detected.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/breakpoint_detected.pl @ARGV" and exit(1);
 }elsif ( $command eq 'snvcov' ) {
-	system "$RealBin/scripts/cov_snp_dot.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/cov_snp_dot.pl @ARGV" and exit(1);
 }elsif ( $command eq 'busco' ) {
-	system "$RealBin/scripts/run_busco.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/run_busco.pl @ARGV" and exit(1);
 }else {
 	die "[$task] Error! Unrecognized command: $command.\n", $usage;
 }
