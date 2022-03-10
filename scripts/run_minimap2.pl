@@ -95,7 +95,7 @@ foreach (@file_list){
 	}elsif ($reads_type	eq 'pb'){
 		$minimap2_cmd .= "-L -ax map-pb $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}elsif ($reads_type	eq 'ccs'){
-		$minimap2_cmd .= "-L -ax sam20 $assembly $_ -o ${prefix_out}_${count}.sam"; 
+		$minimap2_cmd .= "-L -ax asm20 $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}else {
 		$minimap2_cmd .= "$assembly $_ -o ${prefix_out}_${count}.sam";
 	}

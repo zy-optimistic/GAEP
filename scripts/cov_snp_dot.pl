@@ -48,8 +48,8 @@ my $mode = 0;
 
 my ($assembly, @reads1, @reads2, $ngs_list,
     @long_reads, $tgs_list, $reads_type, $ngs_bam,
-    $threads, $fwindows, $bam, $vcf, $min_ctg, $win_size,
-	$prefix, $dir, $bedtools, $bcftools, 
+    $threads, $fwindows, $bam, $vcf, $min_ctg, 
+	$prefix, $dir, $bedtools, $bcftools, $win_size,
 	$Rscript, $help);
 	
 my $format = 'pdf';
