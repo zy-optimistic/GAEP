@@ -35,8 +35,7 @@ GAAP is a pipeline to assess genome assembly.
 
 ### SNV-depth dot plot
 
-* minimap2 (for TGS reads mapping)
-	Can be install by conda with command "conda install perl-bio-samtools -c bioconda".
+* minimap2 (for TGS reads mapping). Can be install by conda with command "conda install perl-bio-samtools -c bioconda".
 * bwa (for NGS reads mapping)
 * Rscript (for plotting)
 * ggplot2 (R module)
