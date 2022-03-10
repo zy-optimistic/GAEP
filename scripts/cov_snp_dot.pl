@@ -47,17 +47,17 @@ my $task = "cov_snp_dot";
 my $mode = 0;
 
 my ($assembly, @reads1, @reads2, $ngs_list,
-    @long_reads, $tgs_list, $reads_type, $ngs_bam,
-    $threads, $fwindows, $bam, $vcf, $min_ctg, 
+	@long_reads, $tgs_list, $reads_type, $ngs_bam,
+	$threads, $fwindows, $bam, $vcf, $min_ctg, 
 	$prefix, $dir, $bedtools, $bcftools, $win_size,
 	$Rscript, $help);
 	
 my $format = 'pdf';
 GetOptions(
-    "r:s"        => \$assembly,
-    "i:s"        => \@reads1,
-    "I:s"        => \@reads2,
-    "nl:s"       => \$ngs_list,
+	"r:s"        => \$assembly,
+	"i:s"        => \@reads1,
+	"I:s"        => \@reads2,
+	"nl:s"       => \$ngs_list,
 	"l:s"        => \@long_reads,
 	"tl:s"       => \$tgs_list,
 	"x:s"        => \$reads_type,	   #(ont,pb)
@@ -70,7 +70,7 @@ GetOptions(
 	"s:i"        => \$win_size,
 	"f:s"        => \$format,
 	"o:s"        => \$prefix,
- 	"d:s"        => \$dir,
+	"d:s"        => \$dir,
 	"bedtools:s" => \$bedtools,
 	"bcftools:s" => \$bcftools,
 	"Rscript:s"  => \$Rscript,
