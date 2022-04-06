@@ -40,7 +40,7 @@ GetOptions(
 	"samtools:s" => \$samtools,
 );
 
-##Check input files.
+##Initial setting
 unless ($assembly && (@sequences || $file_list)) {
 	die $usage;
 }
@@ -53,6 +53,8 @@ if (! -e $dir){
 }
 $prefix = "tgs_mapping_$$" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
+
+print "\n[$task] Output directory is $dir.\n";
 
 my $out_bam = "${prefix_out}_TGS_mapping.bam";
 my @file_list = ();
@@ -78,9 +80,8 @@ if ($file_list){
 	}
 }
 
-
-my $minimap2_cmd = "$minimap2 ";
-$minimap2_cmd .= "--secondary=no -t $threads " if $threads;
+my $minimap2_cmd = "$minimap2 --secondary=no ";
+$minimap2_cmd .= "-t $threads " if $threads;
 my $temp = $minimap2_cmd;
 my $count = 0;
 my @sam_list;
@@ -105,7 +106,7 @@ foreach (@file_list){
 }
 
 ##sort
-my $sort_cmd = "samtools sort -m 2G -O BAM ";
+my $sort_cmd = "samtools sort -O BAM ";
 $sort_cmd .= "-@ $threads " if $threads;
 $temp = $sort_cmd;
 foreach (@sam_list){

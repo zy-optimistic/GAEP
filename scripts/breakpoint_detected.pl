@@ -9,7 +9,7 @@ use threads::shared;
 use Thread::Queue;
 use FindBin qw($RealBin);
 
-my $task = "break_point_detected";
+my $task = "bkp_detection";
 my $mode = 0;
 
 my $usage = <<USAGE;
@@ -33,7 +33,7 @@ Options:
          -h                  print help massage
 USAGE
 
-my $threads = 4;
+my $threads;
 my ($assembly,$file_list,$read_type,$bam,$bam_depth,$reads_type,$dir,$prefix,$no_index,$help,$samtools);
 my $site_distance  = 500;
 my $ignore_end     = 5000;
@@ -55,8 +55,20 @@ GetOptions(
 	"h"        => \$help
 );
 
-die $usage if $help || (!$bam && !@sequences && !$file_list);
-
+##Initial setting
+die $usage if $help;
+if (!$bam && !$assembly) {
+	print "[$task] Make sure to give a bam file or give the assembly and TGS reads for alignment.\n";
+	die $usage;
+	
+}elsif (!$bam && $assembly && !(@sequences || $file_list)) {
+	print "[$task] Error! No reads file.\n";
+	die $usage;
+}
+unless ($threads) {
+	print "[$task] No thread given, defult as 4.\n";
+	$threads = 4;
+}
 ##Check software.
 $samtools = $samtools ? check_software("samtools", $samtools) : check_software("samtools");
 die "[$task] Error! Samtools is not found.
@@ -66,11 +78,12 @@ die "[$task] Error! Samtools is not found.
 $dir = "gaap_${task}_$$" unless $dir;
 if (! -e $dir){
 	if (system "mkdir -p $dir"){
-		die "[$task]Error! Can't make directory:\"$dir\"\n";
+		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix   = "breakpoint_output_$$" unless $prefix;
+$prefix   = "bkp_output_$$" unless $prefix;
 my $prefix_out   = "$dir/$prefix" if $dir;
+print "\n[$task] Output directory is $dir.\n";
 
 ## reads mapping
 if (!$bam) {
@@ -87,16 +100,25 @@ if (!$bam) {
 	$bam = "$dir/mapping/TGS_mapping/${prefix}_TGS_mapping.bam"
 }
 
+
 #---------------------------------variates-------------------------------------#
 
-my $posi_prefix      = "${prefix_out}_temp_clip_site";
-my $sort_prefix      = "${prefix_out}_temp_clip_site_sorted";
-my $ab_prefix        = "${prefix_out}_temp_ab_region";
+my $temp_dir = "$dir/temp";
+if (! -d $temp_dir) {
+	mkdir "$dir/temp" or die "[$task] Error! Can't make directory:\"$dir\"\n";
+}
+my $posi_prefix      = "${temp_dir}/${prefix}_temp_clip_site";
+my $sort_prefix      = "${temp_dir}/${prefix}_temp_clip_site_sorted";
+my $ab_prefix        = "${temp_dir}/${prefix}_temp_ab_region";
+my $bkp_t_prefix     = "${temp_dir}/${prefix}_temp_breakpoints";
+
+my $abr_prefix       = "${prefix_out}_ab_region";
 my $result_prefix    = "${prefix_out}_breakpoints";
 #if (-s $result){
 #	unlink $result || die "[$task]Error! File already exists: $result.\n";
 #}
 my %seq_len   = ();
+my @ctg_list  = ();
 my $tolen     = 0;
 my $win_queue = Thread::Queue->new();
 my $bkp_queue = Thread::Queue->new();
@@ -105,15 +127,17 @@ my $semaphore = Thread::Semaphore->new($threads);
 #-----------------------------------main---------------------------------------#
 
 my $pip = "$samtools view -H $bam ";
-open my $BAM, '-|', $pip || die "[$task 1]Fail to read header of $bam.\n";
+open my $BAM, '-|', $pip || die "[$task 1] Fail to read header of $bam.\n";
 while (<$BAM>) {
 	if (/^\@SQ\s+SN:(\S+)\s+LN:(\d+)/) {
 		$tolen += $2;
 		$seq_len{$1} = $2;
 		$bkp_queue->enqueue($1);
 		$flt_queue->enqueue($1);
+		push @ctg_list, $1;
 	}
 }
+close $BAM;
 $bkp_queue->end();
 $flt_queue->end();
 die "[$task 2]Fail to read header of $bam.\n" unless (%seq_len);
@@ -153,7 +177,7 @@ $bam_depth = $mean if !$bam_depth;
 #print $mean,"\t", $sd, "\n";
 
 ##detect breakpoints
-print STDERR "[$task]Parsing bam to get clip site.\n";
+print STDERR "[$task] Parsing bam to get clip site.\n";
 
 for (my $i = 0; $i < $threads; $i++) {
 	$semaphore->down(1);
@@ -164,7 +188,7 @@ $semaphore->down($threads);
 $semaphore->up($threads);
 
 ##breakpoints filter
-print STDERR "[$task]Filtering breakpoint regions.\n";
+print STDERR "[$task] Filtering breakpoint regions.\n";
 
 for (my $i = 0; $i < $threads; $i++) {
 	$semaphore->down(1);
@@ -173,6 +197,40 @@ for (my $i = 0; $i < $threads; $i++) {
 
 $semaphore->down($threads);
 $semaphore->up($threads);
+
+
+
+##Merge output
+print "[$task] Merge output of each contig into ${result_prefix}.txt.\n";
+open  ABR, '>', "${abr_prefix}.txt"    || die "Can't open such file: ${abr_prefix}.txt";
+open  OUT, '>', "${result_prefix}.txt" || die "Can't open such file: ${result_prefix}.txt";
+print OUT "#GAAP misassembly breakpoint detection.\n";
+print OUT "#INFO: pass: number of reads crossing the breakpoint region.\n";
+print OUT "#INFO: nopass: number of reads not crossing the breakpoint region.\n";
+print OUT "#INFO: Lcov: coverage of 1k region on the left side of the breakpoint region.\n";
+print OUT "#INFO: Bcov: coverage of breakpoint region, -1 if the region length less than 1K.\n";
+print OUT "#INFO: Rcov: coverage of 1k region on the right side of the breakpoint region.\n";
+print OUT "#INFO: type: type of breakpoint.\n";
+print OUT join("\t", "#contig", "start", "end", "pass", "nopass", "Lcov", "Bcov", "Rcov", "type"),"\n";
+for my $ctg (@ctg_list) {
+	if (-s "${ab_prefix}_$ctg.txt") {
+		open RES, '<', "${ab_prefix}_$ctg.txt" || die "Can't open such file: ${ab_prefix}_$ctg.txt";
+		while (<RES>) {
+			print ABR $_;
+		}
+		close RES;
+	}
+	if (-s "${bkp_t_prefix}_$ctg.txt") {
+		open RES, '<', "${bkp_t_prefix}_$ctg.txt" || die "Can't open such file: ${bkp_t_prefix}_$ctg.txt";
+		while (<RES>) {
+			my $type = (split)[-1];
+			print OUT if $type > 0;
+		}
+		close RES;
+	}
+}
+close ABR;
+close OUT;
 
 ##-------------------------------subroutines----------------------------------##
                                           
@@ -407,7 +465,7 @@ sub br_filter_process {
 	while (defined(my $contig = $queue->dequeue())) {
 		if (-s "${ab_prefix}_$contig.txt") {
 			open BKP, '<', "${ab_prefix}_$contig.txt" or die "[$task]Can't open such file: ${posi_prefix}_$contig.txt";
-			open my $RES, '>', "${result_prefix}_$contig.txt" or die "[$task]Can't open such file: ${result_prefix}_$contig.txt";
+			open my $RES, '>', "${bkp_t_prefix}_$contig.txt" or die "[$task]Can't open such file: ${bkp_t_prefix}_$contig.txt";
 			while (<BKP>) {
 				chomp;
 				my ($ctg, $start, $end) = split;

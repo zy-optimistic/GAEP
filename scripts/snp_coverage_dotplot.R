@@ -55,28 +55,28 @@ i <- 1
 while (i <= length(arg)) {
 	if ( substr(arg[i], 1, 1) == "-" ) {
 		if (substr(arg[i], 2, nchar(arg[i])) == "w") {
-			if (length(grep("^[1-9]+$", arg[i+1], perl=TRUE))) {
+			if (length(grep("^[0-9]+$", arg[i+1], perl=TRUE))) {
 				pwidth <- as.numeric(arg[i+1])
 			}else {
 				stop("Use non-numeric argument: ", arg[i+1])
 			}
 			i <- i + 2
 		}else if (substr(arg[i], 2, nchar(arg[i])) == "h") {
-			if (length(grep("^[1-9]+$", arg[i+1], perl=TRUE))) {
+			if (length(grep("^[0-9]+$", arg[i+1], perl=TRUE))) {
 				pheight <- as.numeric(arg[i+1])
 			}else {
 				stop("Use non-numeric argument: ", arg[i+1])
 			}
 			i <- i + 2
 		}else if (substr(arg[i], 2, nchar(arg[i])) == "c") {
-			if (length(grep("^[1-9]+$", arg[i+1], perl=TRUE))) {
+			if (length(grep("^[0-9]+$", arg[i+1], perl=TRUE))) {
 				cov_max <- as.numeric(arg[i+1])
 			}else {
 				stop("Use non-numeric argument: ", arg[i+1])
 			}
 			i <- i + 2
 		}else if (substr(arg[i], 2, nchar(arg[i])) == "s") {
-			if (length(grep("^[1-9]+$", arg[i+1], perl=TRUE))) {
+			if (length(grep("^[0-9]+$", arg[i+1], perl=TRUE))) {
 				snv_max <- as.numeric(arg[i+1])
 			}else {
 				stop("Use non-numeric argument: ", arg[i+1])
