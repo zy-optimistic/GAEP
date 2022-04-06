@@ -38,6 +38,7 @@ GAAP is a pipeline to assess genome assembly.
 * minimap2 v1.9 (for TGS reads mapping). Can be install by conda with command "conda install perl-bio-samtools -c bioconda".
 * bwa v0.7.17-r1198-dirty (for NGS reads mapping)
 * Rscript v4.0.3 (for plotting)
+* bedtools
 * ggplot2 (R module)
 * ggExtra (R module)
 
