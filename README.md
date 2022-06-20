@@ -23,7 +23,7 @@ GAAP is a pipeline to assess genome assembly.
 
 ### breakpoint detection
 
-* Bio::DB::Sam v1.43 (perl module). Can be install by conda with command "conda install perl-bio-samtools -c bioconda".
+* Bio::DB::Sam v1.43 (perl module). Can be installed by conda with command "conda install perl-bio-samtools -c bioconda".
 * minimap2 v2.17-r974-dirty
 * samtools v1.9 
 
