@@ -47,7 +47,7 @@ GetOptions (
 die $usage if $help;
 ##Check input files.
 ##Check input files and directory.
-die $usage if !@reads1 && !@reads2 && !$file_list && !$bam;
+die $usage if !@reads1 && !@reads2 && !$file_list && !$bam && !$vcf;
 
 $dir = "gaap_${task}_$$" unless $dir;
 $dir =~ s/\/$//;
@@ -152,7 +152,7 @@ $accuracy = 1-$err_base;
 
 open OUT, '>', $out_file or die "[$task] Can't open such file: $out_file.\n";
 if ($QV == 0) {
-	print OUT "No error base detected. QV can't be caculated.\n";
+	print OUT "No error base has been detected. QV can't be caculated.\n";
 }else {
 	print OUT "QV\t$QV\n";
 }

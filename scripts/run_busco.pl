@@ -52,7 +52,7 @@ if ($dir && !-e $dir){
 		die "[$task]Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix_out   = "output" unless $prefix_out;
+$prefix_out   = "busco_output" unless $prefix_out;
 
 $ENV{PATH} = "$ENV{PATH}".":".dirname($config->{'augustus'});
 my $AUGUSTUS_CONFIG_PATH = dirname($config->{'augustus'})."/../config";

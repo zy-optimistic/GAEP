@@ -2,6 +2,7 @@
 
 use strict;
 use Getopt::Long;
+use File::Basename;
 use Bio::DB::Sam;
 use threads;
 use Thread::Semaphore;
@@ -69,10 +70,11 @@ unless ($threads) {
 	print "[$task] No thread given, defult as 4.\n";
 	$threads = 4;
 }
-##Check software.
+##Check dependencies.
 $samtools = $samtools ? check_software("samtools", $samtools) : check_software("samtools");
 die "[$task] Error! Samtools is not found.
 [$task] Check your config file or set it in your environment.\n" if $samtools eq "-1";
+
 
 ##Check input files.
 $dir = "gaap_${task}_$$" unless $dir;
@@ -138,9 +140,14 @@ while (<$BAM>) {
 	}
 }
 close $BAM;
+#if ($gzip ne "-1") {
+#	read_header_gzip($bam, $tolen, \%seq_len, $bkp_queue, $flt_queue, \@ctg_list);
+#}else {
+#	read_header_samtools($bam, $tolen, \%seq_len, $bkp_queue, $flt_queue, \@ctg_list);
+#}
 $bkp_queue->end();
 $flt_queue->end();
-die "[$task 2]Fail to read header of $bam.\n" unless (%seq_len);
+die "[$task]Fail to read header of $bam.\n" unless (%seq_len);
 
 #If the bam has indexed?
 unless (-s "${bam}.bai"){
@@ -234,37 +241,103 @@ close OUT;
 
 ##-------------------------------subroutines----------------------------------##
                                           
-sub read_header {
-	my $bam = shift;
-	my %length = ();
+sub read_header_samtools {
+	my $bam       = shift;
+	my $tolen     = shift;
+	my $seq_len   = shift;
+	my $bkp_queue = shift;
+	my $flt_queue = shift;
+	my $ctg_list  = shift;
 	my $pip = "$samtools view -H $bam ";
 	open my $BAM, '-|', $pip || die "[$task 1]Fail to read header of $bam.\n";
 	while (<$BAM>) {
-		/^\@SQ\s+SN:(\S+)\s+LN:(\d+)/ ? $length{$1} = $2 : next;
-	}
-	die "[$task 2]Fail to read header of $bam.\n" unless (%length);
-	return %length;
-}
-
-sub length_check_fai{
-	my %seq_len = ();
-	unless (-s "${assembly}.fai"){
-		my $cmd = "$samtools faidx ";
-		$cmd   .= "$assembly";
-		send_to_system($cmd);
-	}
-	open my $FAI, '<', "${assembly}.fai" || die "Can't open such file: ${assembly}.fai";
-	while (<$FAI>){
-		my ($chr, $length) = (split)[0,1];
-		if (!exists $seq_len{$chr}){
-			$seq_len{$chr} = $length;
-		}else {
-			die "[$task]Error!More than one contig have a same name. Make sure your fasta file is valid.\n";
+		if (/^\@SQ\s+SN:(\S+)\s+LN:(\d+)/) {
+			$seq_len->{$1} = $2;
+			$tolen += $2;
+			$bkp_queue->enqueue($1);
+			$flt_queue->enqueue($1);
+			push @$ctg_list, [$1,$2];			
 		}
 	}
-	close $FAI;
-	return %seq_len;
+	return;
 }
+
+##sub read_header_gzip {
+##	my $bam       = shift;
+##	my $tolen     = shift;
+##	my $seq_len   = shift;
+##	my $bkp_queue = shift;
+##	my $flt_queue = shift;
+##	my $ctg_list  = shift;
+##	my $text = '';
+##	my $n_targets = 0;
+##	my $bam_is_be = 0;
+##	if (byteorder() eq 'b') {
+##		$bam_is_be = 1;
+##	}elsif (byteorder() eq 'l') {
+##		$bam_is_be = 0;
+##	}else {
+##		die "Can't decide of the byteorder.\n";
+##	}
+##	
+##	open my $pipe, '-|', "$gzip -dc $bam" || die $!;
+##	read($pipe, my $buf, 4);
+##	if ($buf ne "BAM\001") {
+##		die "$bam is not a BAM file.\n";
+##	}
+##	read($pipe, my $l_text, 4);
+##	$bam_is_be ? read($pipe, $text, unpack("N", $l_text)):
+##                 read($pipe, $text, unpack("L", $l_text));
+##	
+##	read($pipe, $n_targets, 4);
+##	$n_targets = $bam_is_be ? unpack "N", $n_targets:
+##                              unpack "L", $n_targets;
+##	close $pipe;
+##	
+##	while ($text =~ /\@SQ\s+SN:(\S+)\s+LN:(\d+)/g) {
+##		$seq_len->{$1} = $2;
+##		$tolen += $2;
+##		$bkp_queue->enqueue($1);
+##		$flt_queue->enqueue($1);
+##		push @$ctg_list, [$1,$2];
+##	}
+##	return;
+##}
+##
+##sub byteorder {
+##	my $test = "\x00\x01";
+##	open IN, '<', \$test;
+##	read IN, my $endian, 2;
+##	close IN;
+##	my $unpack = unpack "S", $endian;
+##	if ($unpack == 0x0001) {
+##		return 'b';
+##	}elsif ($unpack == 0x0100){
+##		return 'l';
+##	}else {
+##		return 'n';
+##	}
+##}
+
+#sub length_check_fai{
+#	my %seq_len = ();
+#	unless (-s "${assembly}.fai"){
+#		my $cmd = "$samtools faidx ";
+#		$cmd   .= "$assembly";
+#		send_to_system($cmd);
+#	}
+#	open my $FAI, '<', "${assembly}.fai" || die "Can't open such file: ${assembly}.fai";
+#	while (<$FAI>){
+#		my ($chr, $length) = (split)[0,1];
+#		if (!exists $seq_len{$chr}){
+#			$seq_len{$chr} = $length;
+#		}else {
+#			die "[$task]Error!More than one contig have a same name. Make sure your fasta file is valid.\n";
+#		}
+#	}
+#	close $FAI;
+#	return %seq_len;
+#}
 
 sub ran_window {
 	my $ctg = shift;

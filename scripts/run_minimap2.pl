@@ -119,7 +119,7 @@ foreach (@sam_list){
 if (@file_list > 1){
 	my $merge_cmd = "samtools merge ";
 	$merge_cmd .= "-@ $threads " if $threads;
-	$merge_cmd .= "-h $sam_list[0] $out_bam ";
+	$merge_cmd .= "-h $sam_list[0].sorted.bam $out_bam ";
 	$merge_cmd .= join (" ",map {"$_.sorted.bam"} @sam_list);
 	_system($merge_cmd, $sys_run);
 }else {

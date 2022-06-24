@@ -52,7 +52,8 @@ $GC_cotent = $sum_GC / $total_length; ##GC(%)
 printf ("%-25s%d\n", "Total sequences:", $count);
 printf ("%-25s%d\n" , "Total length:", $total_length);
 printf ("%-25s%d\n", "N's:", $num_of_N);
-printf ("%-25s%d\n" , "Total length(without N):", $total_length-$num_of_N);
+printf ("%-25s%d\n", "N/Gb:", $num_of_N/$total_length*100000000);
+printf ("%-25s%d\n" , "Ungapped length:", $total_length-$num_of_N);
 printf ("%-25s%d\n" , "Number of GC:", $sum_GC );
 printf ("%-25s%.2f%%\n" , "GC%:", $GC_cotent * 100);
 printf ("%-25s%d\n" , "Longest:", $length[-1]);
@@ -67,7 +68,7 @@ for (my $i = @length - 1; $i >= 0; $i --){
 	$Nx += $length[$i];
 	while ($j < @rank) {
 		if ($Nx >= ($total_length*($rank[$j]/100))){
-			printf ("%-25s%d\n", "N$rank[$j](bp):", $length[$i]);
+			printf ("%-25s%d\n", "N$rank[$j]:", $length[$i]);
 			printf ("%-25s%d\n", "L$rank[$j]:"    , @length-$i);
 			$j++;
 		}else {

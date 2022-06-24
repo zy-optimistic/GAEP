@@ -44,5 +44,5 @@ GAAP is a pipeline to assess genome assembly.
 
 ## Usage
 
-GAAP
+GAAP pipe
 

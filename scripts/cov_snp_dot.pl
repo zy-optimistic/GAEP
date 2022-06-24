@@ -216,7 +216,7 @@ close WIN;
 window2SNPden(\%windows);
 
 ##--Coverage--##
-my $cmd = "$bedtools coverage -mean -sorted -bed -nobuf ";
+my $cmd = "$bedtools coverage -mean -sorted -bed -nobuf -split ";
    $cmd .= "-a $fwindows ";
    $cmd .= "-b $bam";
 print STDERR $cmd;
