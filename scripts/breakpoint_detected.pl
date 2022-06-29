@@ -52,7 +52,7 @@ GetOptions(
  	"t:i"      => \$threads,
 	"d:s"      => \$dir,
 	"o:s"      => \$prefix,
-	"samtools" => \$samtools,
+	"samtools:s" => \$samtools,
 	"h"        => \$help
 );
 
@@ -214,9 +214,9 @@ open  OUT, '>', "${result_prefix}.txt" || die "Can't open such file: ${result_pr
 print OUT "#GAAP misassembly breakpoint detection.\n";
 print OUT "#INFO: pass: number of reads crossing the breakpoint region.\n";
 print OUT "#INFO: nopass: number of reads not crossing the breakpoint region.\n";
-print OUT "#INFO: Lcov: coverage of 1k region on the left side of the breakpoint region.\n";
-print OUT "#INFO: Bcov: coverage of breakpoint region, -1 if the region length less than 1K.\n";
-print OUT "#INFO: Rcov: coverage of 1k region on the right side of the breakpoint region.\n";
+print OUT "#INFO: Lcov: mean coverage of 1k region on the left side of the breakpoint region.\n";
+print OUT "#INFO: Bcov: mean coverage of breakpoint region, -1 if the region length less than 1K.\n";
+print OUT "#INFO: Rcov: mean coverage of 1k region on the right side of the breakpoint region.\n";
 print OUT "#INFO: type: type of breakpoint.\n";
 print OUT join("\t", "#contig", "start", "end", "pass", "nopass", "Lcov", "Bcov", "Rcov", "type"),"\n";
 for my $ctg (@ctg_list) {

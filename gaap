@@ -21,7 +21,8 @@ Usage:   gaap <command> [options]
 
 Command: pipe       run pipeline
          stat       report genome basic information
-         macc       base accuracy based on reads mapping 
+         macc       base accuracy based on reads mapping
+		 kacc       base accuracy based on K-mer
          bkp        breakpoints number detected
          snvcov     SNV-coverage dot plot
          busco      run busco
@@ -37,6 +38,8 @@ if ( $command eq 'pipe' ) {
 	system "perl $RealBin/scripts/basic.pl @ARGV" and exit(1);
 }elsif ( $command eq 'macc' ) {
 	system "perl $RealBin/scripts/stat_accuracy_base.pl @ARGV" and exit(1);
+}elsif ( $command eq 'kacc' ) {
+	system "perl $RealBin/scripts/run_merqury.pl @ARGV" and exit(1);
 }elsif ( $command eq 'bkp' ) {
 	system "perl $RealBin/scripts/breakpoint_detected.pl @ARGV" and exit(1);
 }elsif ( $command eq 'snvcov' ) {

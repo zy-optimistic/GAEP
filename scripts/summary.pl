@@ -18,8 +18,9 @@ my %pipe = (
     0x0010 => "$dir/snv_depth_tgs/$prefix.png",                 #"tsd plot",
     0x0020 => "$dir/snv_depth_ngs/$prefix.png",                 #"nsd plot",
     0x0040 => "$dir/mapping/trans_mapping/flagstat_trans.txt",  #"trmr",
-    0x0080 => "$dir/busco_output/short_summary_output.txt",     #"busco",
+    0x0080 => "$dir/busco_out/run_$prefix/short_summary_$prefix.txt",     #"busco",
 	0x0100 => "$prefix_out.base.qv",
+	0x0200 => "$dir/merqury_output/$prefix.qv",
 );
 
 my %result = (
@@ -91,6 +92,7 @@ if ($checkpoint & 0x0004 == 0x0004 && -e $pipe{0x0004}) {
 	close STAT;
 	if ($result{l3}->{1}->[0] != 0) {
 		$value = $value / $result{l3}->{1}->[0] * 1000000;
+		$value = sprintf("%0.2f", $value);
 		$result{l1}->{8} = [$para, 1];
 		$result{l3}->{8} = [$value, 1];
 	}else {
@@ -142,11 +144,11 @@ if ($checkpoint & 0x0080 == 0x0080 && -e $pipe{0x0080}) {
 	$result{l3}->{14} = [$D, 1];
 }
 
-if ($checkpoint & 0x0010 == 0x0010 && -e $pipe{0x0010}) {
+if ($checkpoint & 0x0100 == 0x0100 && -e $pipe{0x0100}) {
 	my $para  = 'QV (reads mapping)';
 	my $value = 0;
 	
-	open STAT, '<', $pipe{0x0010} or warn "[$task] Can't find $pipe{0x0010}.\n";
+	open STAT, '<', $pipe{0x0100} or warn "[$task] Can't find $pipe{0x0100}.\n";
 	while (<STAT>) {
 		if (/^QV/) {
 			$value = (split)[1];
@@ -160,15 +162,31 @@ if ($checkpoint & 0x0010 == 0x0010 && -e $pipe{0x0010}) {
 	}
 }
 
+if ($checkpoint & 0x0200 == 0x0200 && -e $pipe{0x0200}) {
+	my $para  = 'QV (K-mer)';
+	my $value = 0;
+	
+	open STAT, '<', $pipe{0x0200} or warn "[$task] Can't find $pipe{0x0200}.\n";
+	while (<STAT>) {
+		if (/\S+/) {
+			$value = (split)[3];
+		}
+	}
+	close STAT; 
+	if ($value) {
+		$result{l1}->{7} = [$para, 1];
+		$result{l3}->{7} = [$value, 1];	
+	}
+}
 
 my $cl = 0;
 for (1..3) {
-	$cl +=1 if $result{l2}->{$_};
+	$cl += 1 if $result{l2}->{$_};
 }
-$result{l1}->{9}  = ["Mapping ratio", $cl];
+$result{l1}->{9} = ["Mapping ratio", $cl] if $cl > 0;
 
 if ($result{l2}->{4} && $result{l2}->{5} && $result{l2}->{6}) {
-	$cl +=1 if $result{l2}->{$_};
+	$result{l1}->{10} = ["Busco", 3];
 }
 
 
@@ -268,44 +286,3 @@ sub create_table {
 	table_end();
 	tail();
 }
-
-
-#my %result = ("l1" => {
-#	                   1  => ["Total length", 1],
-#					   2  => ["Ungapped length", 1],
-#					   3  => ["N50", 1],
-#					   4  => ["GC%", 1],
-#					   5  => ["N/Gb", 1],
-#					   6  => ["QV (K-mer)", 1],
-#					   7  => ["QV (reads mapping)", 1],
-#					   8  => ["Breakpoints per Mb", 1],
-#					   9  => ["Mapping ratio", 3],
-#					   10 => ["Busco", 3]
-#					  },
-#			   
-#              "l2" => {
-#			           1  => ["NGS", 1],
-#			           2  => ["TGS", 1],
-#                      3  => ["Trans", 1],
-#			           4  => ["Complete", 1],
-#			           5  => ["Fragmented", 1],
-#			           6  => ["Duplicated", 1]
-#				       },
-#				
-#             "l3" => {
-#                     1  => ["133725193", 1],
-#			          2  => ["133725193", 1],
-#			          3  => ["22250686", 1],
-#			          4  => ["36.34%", 1],
-#			          5  => ["1495.6", 1],
-#			          6  => ["63.85", 1],
-#			          7  => ["52.41", 1],
-#			          8  => ["0.54", 1],
-#			          9  => ["97.45%", 1],
-#			          10 => ["88.05%", 1],
-#			          11 => ["99.95%", 1],
-#			          12 => ["99%", 1],
-#			          13 => ["98.4%", 1],
-#				      14 => ["0.6%", 1]
-#				      } 
-#);

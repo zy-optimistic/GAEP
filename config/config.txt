@@ -34,9 +34,13 @@ hisat2=
 {hisat2-build}
 hisat2-build=
 
+{meryl}
+meryl= 
+{merqury.sh}
+merqury.sh=
+
 {Rscript}
 Rscript=
-
 
 #busco depencies
 {tblastn}

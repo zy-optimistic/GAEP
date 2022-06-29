@@ -1,6 +1,7 @@
 #! /usr/bin/perl -w
 
 use strict;
+use File::Basename;
 use Getopt::Long;
 use FindBin qw($RealBin);
 Getopt::Long::Configure qw( bundling no_ignore_case );
@@ -47,7 +48,7 @@ GetOptions (
 die $usage if $help;
 ##Check input files.
 ##Check input files and directory.
-die $usage if !@reads1 && !@reads2 && !$file_list && !$bam && !$vcf;
+die $usage if !@reads1 && !@reads2 && !$file_list && !$bam;
 
 $dir = "gaap_${task}_$$" unless $dir;
 $dir =~ s/\/$//;
@@ -175,7 +176,7 @@ sub check_software {
 	my $software = shift;
 	my $path = shift if @_;
 	if ( $path ) {
-		if ( basename($path) eq "software" && -X $path ) {
+		if ( basename($path) eq $software && -X $path ) {
 			$software = $path;
 		}else {
 			return "-1";

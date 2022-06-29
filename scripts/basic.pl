@@ -40,6 +40,7 @@ while (<IN>){
 		$total_length += length $_;
 	}
 }
+close IN;
 print STDERR "#############################\n";
 
 
@@ -77,7 +78,5 @@ for (my $i = @length - 1; $i >= 0; $i --){
 	}
 	last if $j == @rank;
 }
-
-close IN;
 #close OUT;
 

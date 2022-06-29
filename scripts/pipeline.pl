@@ -99,6 +99,7 @@ if (! -e $dir){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
 }
+
 $prefix = "gaap_output" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
 
@@ -129,7 +130,7 @@ my $vcf           = "$var_dir/$prefix.flt.vcf";
 my $map_qv        = "$prefix_out.base.qv";
 
 my $mapping_trans = "$dir/mapping/trans_mapping";
-my $bam_trans     = "$mapping_trans/${prefix_out}_TRANS_mapping.bam";
+my $bam_trans     = "$mapping_trans/${prefix}_TRANS_mapping.bam";
 my $maprate_trans = "$dir/mapping/trans_mapping/flagstat_trans.txt";
 
 my $snvcov_tgs    = "$dir/snv_coverage_tgs";
@@ -219,6 +220,22 @@ if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
 	push @cmd, [0x5000, 0x0100, "Now calculating base accuracy based on reads mapping.\n", $accu_m_cmd];
 }
 
+#run merqury
+if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
+	my $accu_k_cmd = "$RealBin/run_merqury.pl -r $data{assembly} ";
+	if (@{$data{NGS}->{data1}}) {
+		$accu_k_cmd .= "-i $_ " for @{$data{NGS}->{data1}};
+	}
+	if (@{$data{NGS}->{data2}}) {
+		$accu_k_cmd .= "-i $_ " for @{$data{NGS}->{data2}};
+	}
+	$accu_k_cmd .= "-d $dir/merqury_output ";
+	$accu_k_cmd .= "-o $prefix ";
+	$accu_k_cmd .= "-t $threads "   if $threads;
+	$accu_k_cmd .= "--meryl $software{meryl}->{meryl} " if $software{meryl}->{meryl};
+	$accu_k_cmd .= "--merqury $software{'merqury.sh'}->{'merqury.sh'} " if $software{'merqury.sh'}->{'merqury.sh'};
+	push @cmd, [0x0000, 0x0200, "Now running merqury to calculate base accuracy based on K-mer.\n", $accu_k_cmd];
+}
 #snv_coverage dot-plot
 if (-e $bam_tgs) {
 	my $sc_tgs_cmd = "$RealBin/cov_snp_dot.pl -r $data{assembly} -b $bam_tgs -v $vcf ";
@@ -364,7 +381,7 @@ sub check_software {
 	my $software = shift;
 	my $path = shift if @_;
 	if ( $path ) {
-		if ( basename($path) eq "software" && -X $path ) {
+		if ( basename($path) eq $software && -X $path ) {
 			$software = $path;
 		}else {
 			return "1";
