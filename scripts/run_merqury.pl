@@ -48,6 +48,11 @@ if (! -e $dir){
     if (system "mkdir -p $dir"){
         die "[$task] Error! Can't make directory:\"$dir\"\n";
     }
+}else {
+	my @f = <$dir>;
+	if (@f) {
+			die "[$task] Directory $dir is not empty. Please specify another directory or a empty directory.\n";
+	}
 }
 if (! -e "$dir/meryl"){
     if (system "mkdir -p $dir/meryl"){

@@ -57,7 +57,7 @@ use FindBin qw($RealBin);
 #use Data::Dumper;
 
 my $task = 'gaap pipe';
-my $mode = 0;
+my $mode = 1;
 
 my %data = (
 	assembly   => '',
@@ -98,7 +98,14 @@ if (! -e $dir){
 	if (system "mkdir -p $dir"){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
+}else {
+	my @f = <"$dir/mapping">;
+	if (@f) {
+			die "[$task] Directory $dir/mapping is not empty. Please specify another directory or a empty directory.\n";
+	}
 }
+
+
 
 $prefix = "gaap_output" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
