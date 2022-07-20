@@ -22,7 +22,7 @@ Usage:   gaap <command> [options]
 Command: pipe       run pipeline
          stat       report genome basic information
          macc       base accuracy based on reads mapping
-		 kacc       base accuracy based on K-mer
+         kacc       base accuracy based on K-mer
          bkp        breakpoints number detected
          snvcov     SNV-coverage dot plot
          busco      run busco
