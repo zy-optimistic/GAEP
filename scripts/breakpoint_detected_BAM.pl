@@ -3,7 +3,7 @@
 use strict;
 use Getopt::Long;
 use File::Basename;
-use Bio::DB::HTS;
+use Bio::DB::Sam;
 use threads;
 use Thread::Semaphore;
 use threads::shared;
@@ -351,7 +351,7 @@ sub ran_window {
 }
 
 sub cov_process {
-	my $SAM = Bio::DB::HTS->new(-bam => $bam);
+	my $SAM = Bio::DB::Sam->new(-bam => $bam);
 	my $queue = shift;
 	while (defined(my $region = $queue->dequeue())) {
 		my ($ctg, $start, $end) = @$region;
@@ -395,11 +395,11 @@ sub cal_cov_stat {
 
 sub bkp_process {
 	my $queue        = shift;
-	my $BAM          = Bio::DB::HTSfile->open($bam);
-	my $header       = $BAM->header_read;
+	my $BAM          = Bio::DB::Bam->open($bam);
+	my $header       = $BAM->header;
 	my $target_count = $header->n_targets;
 	my $target_names = $header->target_name;
-	my $index        = Bio::DB::HTSfile->index_load($BAM);
+	my $index        = Bio::DB::Bam->index_open($bam);
 	
 	while (defined(my $contig = $queue->dequeue())) {
 		my ($tid, $start, $end) = $header->parse_region($contig);
@@ -534,7 +534,7 @@ sub br_filter_process {
 	my $queue    = shift;
 	my $mean_cov = shift;
 	my $sd_cov   = shift;
-	my $sam = Bio::DB::HTS->new(-bam => $bam);
+	my $sam = Bio::DB::Sam->new(-bam => $bam);
 	while (defined(my $contig = $queue->dequeue())) {
 		if (-s "${ab_prefix}_$contig.txt") {
 			open BKP, '<', "${ab_prefix}_$contig.txt" or die "[$task]Can't open such file: ${posi_prefix}_$contig.txt";

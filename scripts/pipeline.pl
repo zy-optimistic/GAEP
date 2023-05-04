@@ -44,20 +44,21 @@
 
 =head1 Note: 
 
- Gaap will find a dependency in enviromnent if its path has not been specified 
- in command line or config file. If a dependency can't be found, the corresponding 
- assessments will running with error. It won't affect the assessments without 
- this dependency.
+ "Gaap pipe" will automatically run the required modules depending on the input 
+ data provided. GAAP will search for dependencies in the environment if the path 
+ is not specified in the config file. If a dependency can't be found, it may 
+ result in errors while running the corresponding assessments. However, the 
+ assessments that do not require the missing dependency will not be affected.
 
 =cut
 
 use strict;
 use Getopt::Long;
 use FindBin qw($RealBin);
-#use Data::Dumper;
+use Data::Dumper;
 
 my $task = 'gaap pipe';
-my $mode = 1;
+my $mode = 0;
 
 my %data = (
 	assembly   => '',
@@ -106,7 +107,6 @@ if (! -e $dir){
 }
 
 
-
 $prefix = "gaap_output" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
 
@@ -118,6 +118,7 @@ my @cmd = ();
 if ($conf) {
 	parse_conf($conf, \%data, \%software);
 }
+
 
 #print Dumper(\%data);
 #print Dumper(\%software);
@@ -227,23 +228,9 @@ if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
 	push @cmd, [0x5000, 0x0100, "Now calculating base accuracy based on reads mapping.\n", $accu_m_cmd];
 }
 
-#run merqury
-if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
-	my $accu_k_cmd = "$RealBin/run_merqury.pl -r $data{assembly} ";
-	if (@{$data{NGS}->{data1}}) {
-		$accu_k_cmd .= "-i $_ " for @{$data{NGS}->{data1}};
-	}
-	if (@{$data{NGS}->{data2}}) {
-		$accu_k_cmd .= "-i $_ " for @{$data{NGS}->{data2}};
-	}
-	$accu_k_cmd .= "-d $dir/merqury_output ";
-	$accu_k_cmd .= "-o $prefix ";
-	$accu_k_cmd .= "-t $threads "   if $threads;
-	$accu_k_cmd .= "--meryl $software{meryl}->{meryl} " if $software{meryl}->{meryl};
-	$accu_k_cmd .= "--merqury $software{'merqury.sh'}->{'merqury.sh'} " if $software{'merqury.sh'}->{'merqury.sh'};
-	push @cmd, [0x0000, 0x0200, "Now running merqury to calculate base accuracy based on K-mer.\n", $accu_k_cmd];
-}
 #snv_coverage dot-plot
+
+print "\n\n\n",join("\t", $bam_tgs, $bam_ngs),"\n\n\n";
 if (-e $bam_tgs) {
 	my $sc_tgs_cmd = "$RealBin/cov_snp_dot.pl -r $data{assembly} -b $bam_tgs -v $vcf ";
 	$sc_tgs_cmd   .= "-d $snvcov_tgs ";
@@ -261,6 +248,24 @@ if (-e $bam_tgs) {
 	$sc_ngs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
 	push @cmd, [0x5000, 0x0020, "Now plot snv_coverage dot-plot using ngs bam file.\n", $sc_ngs_cmd];
 }
+
+#run merqury
+if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
+	my $accu_k_cmd = "$RealBin/run_merqury.pl -r $data{assembly} ";
+	if (@{$data{NGS}->{data1}}) {
+		$accu_k_cmd .= "-i $_ " for @{$data{NGS}->{data1}};
+	}
+	if (@{$data{NGS}->{data2}}) {
+		$accu_k_cmd .= "-i $_ " for @{$data{NGS}->{data2}};
+	}
+	$accu_k_cmd .= "-d $dir/merqury_output ";
+	$accu_k_cmd .= "-o $prefix ";
+	$accu_k_cmd .= "-t $threads "   if $threads;
+	$accu_k_cmd .= "--meryl $software{meryl}->{meryl} " if $software{meryl}->{meryl};
+	$accu_k_cmd .= "--merqury $software{'merqury.sh'}->{'merqury.sh'} " if $software{'merqury.sh'}->{'merqury.sh'};
+	push @cmd, [0x0000, 0x0200, "Now running merqury to calculate base accuracy based on K-mer.\n", $accu_k_cmd];
+}
+
 
 #Trans mapping
 if (@{$data{TRANS}->{data1}} or @{$data{TRANS}->{data2}}) {
