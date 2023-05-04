@@ -39,7 +39,8 @@
 
 =head2 Busco setting
 
- -l           Busco lineage dataset, odb9(https://busco-archive.ezlab.org/v3/) is supported, busco will not run without lineage dataset.
+ -l           Busco lineage dataset, odb9(https://busco-archive.ezlab.org/v3/) is supported, 
+              busco will not run without lineage dataset.
  -s           Species used for augustus training in busco.
 
 =head1 Note: 
