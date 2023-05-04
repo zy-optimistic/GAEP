@@ -19,11 +19,11 @@ Pipeline to assess genome assembly.
 
 Usage:   gaap <command> [options]
 
-Command: pipe       run pipeline
+Command: pipe       let GAAP to determine the module to be executed based on the input data
          stat       report genome basic information
          macc       base accuracy based on reads mapping
          kacc       base accuracy based on K-mer
-         bkp        breakpoints number detected
+         bkp        misassembly breakpoints detected
          snvcov     SNV-coverage dot plot
          busco      run busco
 		   
