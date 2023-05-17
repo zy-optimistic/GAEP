@@ -6,7 +6,7 @@ my $task = "basic";
 
 my $usage = qq(
 Usage: 
-gaap stat <fasta file>;
+gaep stat <fasta file>;
 
 );
 

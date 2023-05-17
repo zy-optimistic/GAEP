@@ -211,13 +211,13 @@ $semaphore->up($threads);
 print "[$task] Merge output of each contig into ${result_prefix}.txt.\n";
 open  ABR, '>', "${abr_prefix}.txt"    || die "Can't open such file: ${abr_prefix}.txt";
 open  OUT, '>', "${result_prefix}.txt" || die "Can't open such file: ${result_prefix}.txt";
-print OUT "#GAAP misassembly breakpoint detection.\n";
+print OUT "#GAEP misassembly breakpoint detection.\n";
 print OUT "#INFO: pass: number of reads crossing the breakpoint region.\n";
 print OUT "#INFO: nopass: number of reads not crossing the breakpoint region.\n";
 print OUT "#INFO: Lcov: mean coverage of 1k region on the left side of the breakpoint region.\n";
 print OUT "#INFO: Bcov: mean coverage of breakpoint region, -1 if the region length less than 1K.\n";
 print OUT "#INFO: Rcov: mean coverage of 1k region on the right side of the breakpoint region.\n";
-print OUT "#INFO: type: type of breakpoint.\n";
+print OUT "#INFO: type: breakpoint type. 1: No reads span the breakpoint; 2: Only a few reads can span the breakpoint; 3: Breakpoint caused by repeats.\n";
 print OUT join("\t", "#contig", "start", "end", "pass", "nopass", "Lcov", "Bcov", "Rcov", "type"),"\n";
 for my $ctg (@ctg_list) {
 	if (-s "${ab_prefix}_$ctg.txt") {

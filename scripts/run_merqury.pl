@@ -43,7 +43,7 @@ GetOptions (
 die $usage if !$assembly || !@reads;
 die $usage if $help;
 
-$dir = "gaap_${task}_$$" unless $dir;
+$dir = "gaep_${task}_$$" unless $dir;
 if (! -e $dir){
     if (system "mkdir -p $dir"){
         die "[$task] Error! Can't make directory:\"$dir\"\n";

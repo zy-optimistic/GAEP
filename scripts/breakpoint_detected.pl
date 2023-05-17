@@ -77,7 +77,7 @@ die "[$task] Error! Samtools is not found.
 
 
 ##Check input files.
-$dir = "gaap_${task}_$$" unless $dir;
+$dir = "gaep_${task}_$$" unless $dir;
 if (! -e $dir){
 	if (system "mkdir -p $dir"){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
@@ -211,14 +211,14 @@ $semaphore->up($threads);
 print "[$task] Merge output of each contig into ${result_prefix}.txt.\n";
 open  ABR, '>', "${abr_prefix}.txt"    || die "Can't open such file: ${abr_prefix}.txt";
 open  OUT, '>', "${result_prefix}.txt" || die "Can't open such file: ${result_prefix}.txt";
-print OUT "#GAAP misassembly breakpoint detection.\n";
-print OUT "#INFO: pass: number of reads crossing the breakpoint region.\n";
-print OUT "#INFO: nopass: number of reads not crossing the breakpoint region.\n";
-print OUT "#INFO: Lcov: mean coverage of 1k region on the left side of the breakpoint region.\n";
-print OUT "#INFO: Bcov: mean coverage of breakpoint region, -1 if the region length less than 1K.\n";
-print OUT "#INFO: Rcov: mean coverage of 1k region on the right side of the breakpoint region.\n";
-print OUT "#INFO: type: type of breakpoint.\n";
-print OUT join("\t", "#contig", "start", "end", "pass", "nopass", "Lcov", "Bcov", "Rcov", "type"),"\n";
+print OUT "#GAEP misassembly breakpoint detection.\n";
+print OUT "#INFO: span: the count of reads that span the breakpoint region.\n";
+print OUT "#INFO: no_span: the count of reads that do not span the breakpoint region.\n";
+print OUT "#INFO: Lcov: the mean coverage of a 1k region to the left of the breakpoint region.\n";
+print OUT "#INFO: Bcov: mean coverage of the breakpoint region, -1 if the region length less than 1K.\n";
+print OUT "#INFO: Rcov: the mean coverage of a 1k region to the right of the breakpoint region.\n";
+print OUT "#INFO: type: breakpoint type. 1: No reads span the breakpoint; 2: Only a few reads can span the breakpoint; 3: Breakpoint caused by repeats.\n";
+print OUT join("\t", "#contig", "start", "end", "span", "no_span", "Lcov", "Bcov", "Rcov", "type"),"\n";
 for my $ctg (@ctg_list) {
 	if (-s "${ab_prefix}_$ctg.txt") {
 		open RES, '<', "${ab_prefix}_$ctg.txt" || die "Can't open such file: ${ab_prefix}_$ctg.txt";
@@ -565,8 +565,8 @@ sub br_filter {
 	my $FILE      = shift;
 	
 	my %read_info = (
-		pass    => 0,
-		nopass  => 0,
+		span    => 0,
+		nospan  => 0,
 	);
 	my $Lcoverage = 0;
 	my $Bcoverage = 0;
@@ -586,9 +586,9 @@ sub br_filter {
 		# query
 		next if ($rend - $rstart <= 500);
 		
-		## pass or no pass
+		## span or no span
 		if ($rstart < $start && $rend > $end) {
-			$read_info{pass} += 1;
+			$read_info{span} += 1;
 			#insertion or deletion
 			my %atype  = ();
 			$atype{$_} = 0 for ('S','H','M','I','D');   #,'N','P','=','X'
@@ -600,22 +600,22 @@ sub br_filter {
 						next if ($rbreakpoint < $start);
 						last if ($lbreakpoint > $end);
 						next LINE if ($lbreakpoint < $start && $rbreakpoint > $end);
-						$read_info{nopass} += 1;
-						$read_info{pass} -= 1;
+						$read_info{nospan} += 1;
+						$read_info{span} -= 1;
 						last;
 					}elsif ( $2 eq 'I' ) {
 						my $breakpoint  = $rstart + $atype{'M'} + $atype{'D'};
 						next if ($breakpoint < $start);
 						last if ($breakpoint > $end);
-						$read_info{nopass} += 1;
-						$read_info{pass} -= 1;
+						$read_info{nospan} += 1;
+						$read_info{span} -= 1;
 						last;
 					}
 				}
 				$atype{"$2"} += $1;
 			}
 		}else {
-			$read_info{nopass} += 1 unless ($rend < $start || $rstart > $end);
+			$read_info{nospan} += 1 unless ($rend < $start || $rstart > $end);
 		}
 		
 		##clip length
@@ -666,13 +666,13 @@ sub br_filter {
 	
 	##filter
 	my ($max_cov, $min_cov) = max_min_three($read_info{Lcov}, $read_info{Bcov}, $read_info{Rcov});
-	my $total = $read_info{nopass}+$read_info{pass};
-	my $bkp_type = $read_info{pass} == 0                                              ?  1 :
-			       $read_info{nopass}/$total < 0.25                                   ? -1 :
-			       $read_info{nopass}/$total > 0.75                                   ?  2 :
+	my $total = $read_info{nospan}+$read_info{span};
+	my $bkp_type = $read_info{span} == 0                                              ?  1 :
+			       $read_info{nospan}/$total < 0.25                                   ? -1 :
+			       $read_info{nospan}/$total > 0.75                                   ?  2 :
 			       ($max_cov > $mean_cov+3*$sd_cov || $max_cov < $mean_cov-3*$sd_cov) ?  3 :
 		                                                                                -2 ;
-	print $FILE join("\t",$ctg,$start,$end,$read_info{pass},$read_info{nopass},$read_info{Lcov},$read_info{Bcov},$read_info{Rcov},$bkp_type), "\n";																					
+	print $FILE join("\t",$ctg,$start,$end,$read_info{span},$read_info{nospan},$read_info{Lcov},$read_info{Bcov},$read_info{Rcov},$bkp_type), "\n";																					
 }
 
 sub max_min_three {

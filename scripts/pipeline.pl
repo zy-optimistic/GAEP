@@ -2,12 +2,12 @@
 
 =head1 Description
 
- GAAP: Genome assembly assessment pipeline
+ GAEP: Genome assembly assessment pipeline
  Version: V1.0
 
 =head1 Usage
 
- gaap pipe <-r fasta_file> [options]
+ gaep pipe <-r fasta_file> [options]
 
 =head1 Options
 
@@ -45,8 +45,8 @@
 
 =head1 Note: 
 
- "Gaap pipe" will automatically run the required modules depending on the input 
- data provided. GAAP will search for dependencies in the environment if the path 
+ "Gaep pipe" will automatically run the required modules depending on the input 
+ data provided. GAEP will search for dependencies in the environment if the path 
  is not specified in the config file. If a dependency can't be found, it may 
  result in errors while running the corresponding assessments. However, the 
  assessments that do not require the missing dependency will not be affected.
@@ -58,7 +58,7 @@ use Getopt::Long;
 use FindBin qw($RealBin);
 use Data::Dumper;
 
-my $task = 'gaap pipe';
+my $task = 'gaep pipe';
 my $mode = 0;
 
 my %data = (
@@ -94,7 +94,7 @@ die "[$task] Error! No assembly file has input.\n", `pod2text $0` unless $data{a
 
 #print Dumper(\%data);
 
-$dir = "./gaap_output_$$" unless $dir;
+$dir = "./gaep_output_$$" unless $dir;
 $dir =~ s/\/$//;
 if (! -e $dir){
 	if (system "mkdir -p $dir"){
@@ -108,7 +108,7 @@ if (! -e $dir){
 }
 
 
-$prefix = "gaap_output" unless $prefix;
+$prefix = "gaep_output" unless $prefix;
 my $prefix_out = "$dir/$prefix" if $dir;
 
 my %software = ();
@@ -332,14 +332,14 @@ if ($mode == 1) {
 	}
 }
 
-my $summary_cmd = "perl $RealBin/summary.pl $dir $prefix $checkpoint > ${prefix_out}_gaap_summary.html";
+my $summary_cmd = "perl $RealBin/summary.pl $dir $prefix $checkpoint > ${prefix_out}_gaep_summary.html";
 print $summary_cmd,"\n";
 if (system $summary_cmd) {
-	print "[$task] GAAP summary failed.\n\n";
-	print join(" ", "[$task]", date(), "GAAP summary failed.\n\n");
+	print "[$task] GAEP summary failed.\n\n";
+	print join(" ", "[$task]", date(), "GAEP summary failed.\n\n");
 }else {
-	print "[$task] GAAP running all completed!\n\n";
-	print join(" ", "[$task]", date(), "GAAP running all completed!\n\n");
+	print "[$task] GAEP running all completed!\n\n";
+	print join(" ", "[$task]", date(), "GAEP running all completed!\n\n");
 }
 
 

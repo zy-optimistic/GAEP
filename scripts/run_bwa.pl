@@ -26,7 +26,7 @@ GetOptions(
 ##Check input files and directory.
 die ("[$task] Error!Please input your assembly file.\n") unless $assembly;
 
-$dir = "gaap_${task}_$$" unless $dir;
+$dir = "gaep_${task}_$$" unless $dir;
 if (! -e $dir){
 	if (system "mkdir -p $dir"){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";

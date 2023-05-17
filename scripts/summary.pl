@@ -3,7 +3,7 @@
 use strict;
 use Data::Dumper;
 
-my $task = 'GAAP';
+my $task = 'GAEP';
 
 my $dir = shift;
 my $prefix = shift;
@@ -204,13 +204,13 @@ sub head {
 	print "<html>\n";
 	print "  <head>\n";
 	print "    <meta charset=\"UTF-8\">\n";
-#	print "    <title>GAAP: Genome Assembly Assessment Pipeline</title>\n";
+#	print "    <title>GAEP: Genome Assembly Assessment Pipeline</title>\n";
 	print "  </head>\n\n";
 	
 	print "  <body>\n";
 	print "    <table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"0\" align=\"left\">\n";
 	print "      <tr>\n";
-	print "        <td align=\"center\" class=\"title\" height=\"60\">GAAP: Genome Assembly Assessment Pipeline</td>\n";
+	print "        <td align=\"center\" class=\"title\" height=\"60\">GAEP: Genome Assembly Assessment Pipeline</td>\n";
 	print "      </tr>\n";
 	print "      <tr>\n";
 	print "        <td align=\"right\" height=\"25\">",$date,"</td>\n";

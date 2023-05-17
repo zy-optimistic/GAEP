@@ -6,20 +6,20 @@ use Data::Dumper;
 use File::Basename;
 use FindBin qw ($RealBin);
 
-my $task = 'gaap';
+my $task = 'gaep';
 my $mode = 0;
 
 my $command      =  shift ;
 
 my $usage = qq(
-Program: gaap
+Program: gaep
 Version: V1.0
 
 Pipeline to assess genome assembly.
 
-Usage:   gaap <command> [options]
+Usage:   gaep <command> [options]
 
-Command: pipe       let GAAP to determine the module to be executed based on the input data
+Command: pipe       let GAEP to determine the module to be executed based on the input data
          stat       report genome basic information
          macc       base accuracy based on reads mapping
          kacc       base accuracy based on K-mer

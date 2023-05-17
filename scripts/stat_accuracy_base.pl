@@ -50,7 +50,7 @@ die $usage if $help;
 ##Check input files and directory.
 die $usage if !@reads1 && !@reads2 && !$file_list && !$bam;
 
-$dir = "gaap_${task}_$$" unless $dir;
+$dir = "gaep_${task}_$$" unless $dir;
 $dir =~ s/\/$//;
 if (! -e $dir){
 	if (system "mkdir -p $dir"){

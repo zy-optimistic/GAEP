@@ -32,7 +32,7 @@
 
 =head1 Usage
  
-  To generate SNV-cov dot plot, gaap need two types of input file. One of them 
+  To generate SNV-cov dot plot, gaep need two types of input file. One of them 
   is the vcf file includes the SNV called from alignment between NGS reads and 
   contigs. Another one is the bam file of alignment 
   
@@ -105,7 +105,7 @@ if (!$vcf && !$bam) {
 			
 	}
 }
-$dir = "gaap_${task}_$$" unless $dir;
+$dir = "gaep_${task}_$$" unless $dir;
 if (! -e $dir){
 	if (system "mkdir -p $dir"){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
