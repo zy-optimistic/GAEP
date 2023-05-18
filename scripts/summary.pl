@@ -210,7 +210,7 @@ sub head {
 	print "  <body>\n";
 	print "    <table width=\"100%\" border=\"1\" cellspacing=\"0\" cellpadding=\"0\" align=\"left\">\n";
 	print "      <tr>\n";
-	print "        <td align=\"center\" class=\"title\" height=\"60\">GAEP: Genome Assembly Assessment Pipeline</td>\n";
+	print "        <td align=\"center\" class=\"title\" height=\"60\">GAEP: Genome Assembly Evaluating Pipeline</td>\n";
 	print "      </tr>\n";
 	print "      <tr>\n";
 	print "        <td align=\"right\" height=\"25\">",$date,"</td>\n";

@@ -1,5 +1,5 @@
 # GAAP
-A genome assembly assessment pipeline.
+A genome assembly evaluating pipeline.
 
 ## Introduction
 
