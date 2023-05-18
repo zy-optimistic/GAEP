@@ -1,21 +1,21 @@
-# GAAP
+# GAEP
 A genome assembly evaluating pipeline.
 
 ## Introduction
 
-GAAP is a pipeline to assess genome assembly. 
+GAEP is a pipeline to assess genome assembly. 
 
 ## Installation
 ```shell
-git clone https://github.com/zy-optimistic/GAAP.git  
-cd GAAP  
-./gaap  
+git clone https://github.com/zy-optimistic/GAEP.git
+cd GAEP  
+./gaep  
 ```
 ## Usage
 ```
-gaap <command> [options]
+gaep <command> [options]
 
-pipe        let GAAP to determine the module to be executed based on the input data   
+pipe        let GAEP to determine the module to be executed based on the input data   
 stat        report genome basic information  
 macc        base accuracy based on reads mapping  
 kacc        base accuracy based on K-mer  
