@@ -217,7 +217,7 @@ print OUT "#INFO: no_span: the count of reads that do not span the breakpoint re
 print OUT "#INFO: Lcov: the mean coverage of a 1k region to the left of the breakpoint region.\n";
 print OUT "#INFO: Bcov: mean coverage of the breakpoint region, -1 if the region length less than 1K.\n";
 print OUT "#INFO: Rcov: the mean coverage of a 1k region to the right of the breakpoint region.\n";
-print OUT "#INFO: type: breakpoint type. 1: No reads span the breakpoint; 2: Only a few reads can span the breakpoint; 3: Breakpoint caused by repeats.\n";
+print OUT "#INFO: type: breakpoint type. 1: No reads span the breakpoint; 2: Only a low proportion of reads supports the contig; 3: Breakpoint caused by repeats.\n";
 print OUT join("\t", "#contig", "start", "end", "span", "no_span", "Lcov", "Bcov", "Rcov", "type"),"\n";
 for my $ctg (@ctg_list) {
 	if (-s "${ab_prefix}_$ctg.txt") {
