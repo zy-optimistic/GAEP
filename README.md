@@ -26,7 +26,7 @@ busco       run busco v3
 
 ## Running example
 ```bash
-gaep pipe -r genome.fasta --lr TGS.fastq -x pb --sr1 NGS_1.fastq --sr2 NGS_1.fastq -t 3 -c config.txt
+gaep pipe -r genome.fasta --lr TGS.fastq -x pb --sr1 NGS_1.fastq --sr2 NGS_2.fastq -t 3 -c config.txt
 #You can list your data and dependancies in the config.txt. The template of config.txt is in GAEP/config/.
 ```
 
