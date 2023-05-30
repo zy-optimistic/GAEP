@@ -40,7 +40,7 @@ gaep pipe -r genome.fasta --lr TGS.fastq -x pb --sr1 NGS_1.fastq --sr2 NGS_2.fas
 
 ### SNV-depth dot plot (snvcov)
 
-* minimap2 v1.9 (for TGS reads mapping)
+* minimap2 v2.17-r974-dirty (for TGS reads mapping)
 * bwa v0.7.17-r1198-dirty (for NGS reads mapping)
 * Rscript v4.0.3 (for plotting)
 * bedtools
