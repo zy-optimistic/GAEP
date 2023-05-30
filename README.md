@@ -30,7 +30,9 @@ gaep pipe -r genome.fasta --lr TGS.fastq -x pb --sr1 NGS_1.fastq --sr2 NGS_2.fas
 #You can list your data and dependancies in the config.txt. The template of config.txt is in GAEP/config/.
 ```
 
-## Dependencies (used for testing GAEP)
+## Dependencies
+
+The specified versions were used for testing GAEP.
 
 ### Misassembliy breakpoint detection (bkp)
 
