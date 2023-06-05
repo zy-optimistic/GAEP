@@ -41,7 +41,7 @@ if ( $command eq 'pipe' ) {
 }elsif ( $command eq 'kacc' ) {
 	system "perl $RealBin/scripts/run_merqury.pl @ARGV" and exit(1);
 }elsif ( $command eq 'bkp' ) {
-	system "perl $RealBin/scripts/breakpoint_detected.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/breakpoint_detection.pl @ARGV" and exit(1);
 }elsif ( $command eq 'snvcov' ) {
 	system "perl $RealBin/scripts/cov_snp_dot.pl @ARGV" and exit(1);
 }elsif ( $command eq 'busco' ) {

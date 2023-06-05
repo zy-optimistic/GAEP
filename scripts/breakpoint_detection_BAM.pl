@@ -10,7 +10,7 @@ use threads::shared;
 use Thread::Queue;
 use FindBin qw($RealBin);
 
-my $task = "bkp_detection";
+my $task = "bkp_detection_BAM";
 my $mode = 0;
 
 my $usage = <<USAGE;

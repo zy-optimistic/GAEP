@@ -179,7 +179,7 @@ if (@{$data{TGS}->{data}}) {
 	push @cmd, [0x8000, 0x0002, "Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
 	
 	#breakpoint detect
-	my $bkp_cmd = "$RealBin/breakpoint_detected.pl -b $bam_tgs ";
+	my $bkp_cmd = "$RealBin/breakpoint_detection.pl -b $bam_tgs ";
 	$bkp_cmd .= "-t $threads " if $threads;
 	$bkp_cmd .= "-d $bkp_dir ";
 	$bkp_cmd .= "-o $prefix ";
