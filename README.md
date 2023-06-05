@@ -61,10 +61,12 @@ The specified versions were used for testing GAEP.
 * meryl v1.3
 * merqury v1.3
 
-### busco
+### busco v5
 
-* Augustus (> 3.2.1)
-* blastn
-* hmmer v3.1b2
+* busco v5  
+* prodigal
+* metaeuk
+* hmmsearch
+* bbtools
 
 
