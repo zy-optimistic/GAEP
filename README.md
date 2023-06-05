@@ -63,10 +63,8 @@ The specified versions were used for testing GAEP.
 
 ### busco v5
 
-* busco v5  
-* prodigal
-* metaeuk
+* busco v5
+* metaeuk (for eukaryotes)
+* prodigal (for non-eukaryotes)
 * hmmsearch
 * bbtools
-
-
