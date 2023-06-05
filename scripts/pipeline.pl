@@ -101,7 +101,7 @@ if (! -e $dir){
 		die "[$task] Error! Can't make directory:\"$dir\"\n";
 	}
 }else {
-	my @f = <"$dir/mapping">;
+	my @f = <"$dir/mapping/*">;
 	if (@f) {
 			die "[$task] Directory $dir/mapping is not empty. Please specify another directory or a empty directory.\n";
 	}
@@ -327,7 +327,7 @@ if ($busco_lineage) {
 	#$busco_cmd .= "--tblastn   $software{tblastn}->{tblastn}     " if $software{tblastn}->{tblastn};    
 	#$busco_cmd .= "--augustus  $software{augustus}->{augustus}   " if $software{augustus}->{augustus};
 	#$busco_cmd .= "--hmmsearch $software{hmmsearch}->{hmmsearch} " if $software{hmmsearch}->{hmmsearch};
-	push @cmd, [0x0000, 0x0080, "Now running busco5.\n", $busco_cmd];
+	push @cmd, [0x0000, 0x0080, "Now running busco v5.\n", $busco_cmd];
 }
 
 ##running

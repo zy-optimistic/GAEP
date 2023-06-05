@@ -29,8 +29,8 @@ Options:
     --bbtools       path to bbtools stats.sh
 
 Note:
-    GAEP calls BUSCO in offline mode, so please provide an unpacked lineage 
-    dataset, which can be downloaded from https://busco-data.ezlab.org/v5/data/.
+    GAEP calls BUSCO in offline mode, so please provide an unpacked lineage dataset, 
+	which can be downloaded from https://busco-data.ezlab.org/v5/data/lineages/.
     If the paths of the dependencies are not specified in the command line, GAEP 
     will search for them in the environment.
 USAGE

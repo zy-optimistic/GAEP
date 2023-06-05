@@ -22,6 +22,7 @@ my %pipe = (
 	0x0100 => "$prefix_out.base.qv",
 	0x0200 => "$dir/merqury_output/$prefix.qv",
 );
+$pipe{0x0080} = glob $pipe{0x0080};
 
 my %result = (
 	l1 => {},
@@ -129,7 +130,6 @@ if ($checkpoint & 0x0040 == 0x0040 && -e $pipe{0x0040}) {
 }
 
 if ($checkpoint & 0x0080 == 0x0080 && -e $pipe{0x0080}) {
-	$pipe{0x0080} = glob $pipe{0x0080};
 	my ($C, $D, $F) = (0,0,0);
 	open STAT, '<', $pipe{0x0080} or warn "[$task] Can't find $pipe{0x0080}.\n";
 	while (<STAT>) {
