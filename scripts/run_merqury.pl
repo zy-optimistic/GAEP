@@ -10,19 +10,18 @@ my $mode = 0;
 
 my $usage = qq(
 Program: $task
-Version: v1.0
 
 Usage:   $task <-r fasta> <-i fastq> [<-i fastq>] [options]
 Options:
-         -r        genome assembly in a fasta file
-         -g        total length of assembly
-         -i        fastq file. Can be set more than one time
-         -t        max threads to use
-         -d        output directory
-         -o        output prefix
-         -h        print help massage
-         --meryl:s"    => \$meryl, 
-         --merqury:s"  => \$merqury,
+         -r          Genome assembly in a fasta file
+         -g          Total length of assembly
+         -i          Fastq file. Can be set more than one time
+         -t          Max threads to use
+         -d          Output directory
+         -o          Output prefix
+         -h          Print help massage
+         --meryl     Path to meryl
+         --merqury   Path to merqury
 );
 
 ##----------------------------------options-----------------------------------##

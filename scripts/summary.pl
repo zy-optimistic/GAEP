@@ -18,7 +18,7 @@ my %pipe = (
     0x0010 => "$dir/snv_depth_tgs/$prefix.png",                 #"tsd plot",
     0x0020 => "$dir/snv_depth_ngs/$prefix.png",                 #"nsd plot",
     0x0040 => "$dir/mapping/trans_mapping/flagstat_trans.txt",  #"trmr",
-    0x0080 => "$dir/busco_out/run_$prefix/short_summary_$prefix.txt",     #"busco",
+    0x0080 => "$dir/busco_out/$prefix/short_summary.*$prefix.txt",     #"busco",
 	0x0100 => "$prefix_out.base.qv",
 	0x0200 => "$dir/merqury_output/$prefix.qv",
 );
@@ -129,6 +129,7 @@ if ($checkpoint & 0x0040 == 0x0040 && -e $pipe{0x0040}) {
 }
 
 if ($checkpoint & 0x0080 == 0x0080 && -e $pipe{0x0080}) {
+	$pipe{0x0080} = glob $pipe{0x0080};
 	my ($C, $D, $F) = (0,0,0);
 	open STAT, '<', $pipe{0x0080} or warn "[$task] Can't find $pipe{0x0080}.\n";
 	while (<STAT>) {
@@ -268,7 +269,7 @@ sub create_table {
 	for my $layer (sort keys %$table) {
 		line_start();
 		
-		for (sort {$a <=> $b} keys $table->{$layer}) {
+		for (sort {$a <=> $b} keys %{$table->{$layer}}) {
 			my $ele = $table->{$layer}->{$_}->[0];
 			my $col = $table->{$layer}->{$_}->[1];
 			my $row = 1;

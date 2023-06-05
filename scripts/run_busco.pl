@@ -11,7 +11,6 @@ my $mode = 0;
 
 my $usage = <<USAGE;
 Program: $task
-Version: v1.0
 
 Command: 
     $task -r assembly [option]

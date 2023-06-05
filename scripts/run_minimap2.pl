@@ -9,7 +9,6 @@ my $sys_run = 0;
 
 my $usage = qq (
 Program: $task
-Version: v1.0
 
 Usage : $task -r <assembly> (-i <fastq> | -l <fastq list>) [options]
 
@@ -17,7 +16,7 @@ Options:
          -r <FILE>    Genome assembly in a fasta file.
          -i <FILE>    Fastq file. Can be set more than one time.
          -l <FILE>    File listing fastq files. One per line.
-         -x <STR>     Reads type. (ont,pb)
+         -x <STR>     Reads type. (ont,pb,ccs)
          -t <INT>     Threads use in minimap2 and samtools.
          -o <STR>     Output prefix.
          -d <DIR>     Output directory.
@@ -68,6 +67,8 @@ $samtools = $samtools ? check_software("samtools", $samtools) : check_software("
 die "[$task] Error! Samtools is not found.
 [$task] Check your config file or set it in your environment.\n" if $samtools eq "-1";
 
+my $version = `$minimap2 --version`;
+
 ##reading file list
 if (@sequences){
 	@file_list = @sequences;
@@ -96,7 +97,11 @@ foreach (@file_list){
 	}elsif ($reads_type	eq 'pb'){
 		$minimap2_cmd .= "-L -ax map-pb $assembly $_ -o ${prefix_out}_${count}.sam"; 
 	}elsif ($reads_type	eq 'ccs'){
-		$minimap2_cmd .= "-L -ax asm20 $assembly $_ -o ${prefix_out}_${count}.sam"; 
+		if (version_compare($version, "2.19") >=0) {
+			$minimap2_cmd .= "-L -ax map-hifi $assembly $_ -o ${prefix_out}_${count}.sam"; 
+		}else {
+			$minimap2_cmd .= "-L -ax asm20 $assembly $_ -o ${prefix_out}_${count}.sam"; 
+		}
 	}else {
 		$minimap2_cmd .= "$assembly $_ -o ${prefix_out}_${count}.sam";
 	}
@@ -147,6 +152,26 @@ sub check_software {
 	}
 }
 
+sub version_compare {
+    my ($a, $b) = @_;
+	$a =~ s/-.*//;
+    my @parts_a = split(/\./, $a);
+    my @parts_b = split(/\./, $b);
+
+    while (@parts_a || @parts_b) {
+        my $part_a = shift @parts_a || 0;
+        my $part_b = shift @parts_b || 0;
+
+        if ($part_a =~ /^\d+$/ && $part_b =~ /^\d+$/) {
+            return $part_a <=> $part_b if $part_a != $part_b;
+        } else {
+            return $part_a cmp $part_b if $part_a ne $part_b;
+        }
+    }
+
+    return 0;
+}
+
 sub _system {
 	my $cmd = shift;
 	my $mode = @_ ? shift : 0;
@@ -158,3 +183,4 @@ sub _system {
 	}
 	return;
 }	
+

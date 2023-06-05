@@ -3,7 +3,7 @@
 =head1 Description
 
  GAEP: Genome Assembly Evaluating Pipeline
- Version: V1.0
+ Version: V1.1.0
 
 =head1 Usage
 
@@ -39,7 +39,7 @@
 
 =head2 Busco setting
 
- -l           Busco lineage dataset, odb9(https://busco-archive.ezlab.org/v3/) is supported, 
+ -l           Busco lineage dataset, odb10(https://busco-data.ezlab.org/v5/data/) is supported, 
               busco will not run without lineage dataset.
  -s           Species used for augustus training in busco.
 
@@ -294,18 +294,40 @@ if (@{$data{TRANS}->{data1}} or @{$data{TRANS}->{data2}}) {
 	push @cmd, [0x2000, 0x0040, "Now running samtools flagstat to gain mapping rate of tgs data.\n", $flg_cmd];
 }
 
-#run busco
+##run busco
+#if ($busco_lineage) {
+#	my $busco_cmd = "$RealBin/run_busco.pl -r $data{assembly} ";
+#	$busco_cmd .= "-l $busco_lineage ";
+#	$busco_cmd .= "-t $threads "   if $threads;
+#	$busco_cmd .= "-d $busco_dir ";
+#	$busco_cmd .= "-o $prefix ";
+#	$busco_cmd .= "-s $species " if $species;
+#	$busco_cmd .= "--tblastn   $software{tblastn}->{tblastn}     " if $software{tblastn}->{tblastn};    
+#	$busco_cmd .= "--augustus  $software{augustus}->{augustus}   " if $software{augustus}->{augustus};
+#	$busco_cmd .= "--hmmsearch $software{hmmsearch}->{hmmsearch} " if $software{hmmsearch}->{hmmsearch};
+#	push @cmd, [0x0000, 0x0080, "Now running busco.\n", $busco_cmd];
+#}
+
+#run busco5
 if ($busco_lineage) {
-	my $busco_cmd = "$RealBin/run_busco.pl -r $data{assembly} ";
+	my $busco_cmd = "$RealBin/run_busco5.pl -r $data{assembly} ";
 	$busco_cmd .= "-l $busco_lineage ";
 	$busco_cmd .= "-t $threads "   if $threads;
 	$busco_cmd .= "-d $busco_dir ";
 	$busco_cmd .= "-o $prefix ";
 	$busco_cmd .= "-s $species " if $species;
-	$busco_cmd .= "--tblastn   $software{tblastn}->{tblastn}     " if $software{tblastn}->{tblastn};    
-	$busco_cmd .= "--augustus  $software{augustus}->{augustus}   " if $software{augustus}->{augustus};
-	$busco_cmd .= "--hmmsearch $software{hmmsearch}->{hmmsearch} " if $software{hmmsearch}->{hmmsearch};
-	push @cmd, [0x0000, 0x0080, "Now running busco.\n", $busco_cmd];
+	
+	$busco_cmd .= "--busco     $software{busco}->{busco} "         if $software{busco}->{busco};
+    $busco_cmd .= "--prodigal  $software{prodigal}->{prodigal} "   if $software{prodigal}->{prodigal};
+    $busco_cmd .= "--metaeuk   $software{metaeuk}->{metaeuk} "     if $software{metaeuk}->{metaeuk};
+    $busco_cmd .= "--hmmsearch $software{hmmsearch}->{hmmsearch} " if $software{hmmsearch}->{hmmsearch};
+    $busco_cmd .= "--bbtools   $software{bbtools}->{bbtools} "     if $software{bbtools}->{bbtools};
+	
+	
+	#$busco_cmd .= "--tblastn   $software{tblastn}->{tblastn}     " if $software{tblastn}->{tblastn};    
+	#$busco_cmd .= "--augustus  $software{augustus}->{augustus}   " if $software{augustus}->{augustus};
+	#$busco_cmd .= "--hmmsearch $software{hmmsearch}->{hmmsearch} " if $software{hmmsearch}->{hmmsearch};
+	push @cmd, [0x0000, 0x0080, "Now running busco5.\n", $busco_cmd];
 }
 
 ##running

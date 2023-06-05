@@ -11,7 +11,7 @@
 
 =head1 Usage
  
-  cov_snp_dot.pl
+    gaep snvcov <-r assembly.fasta> -i sr1.fastq -I sr2.fastq -l lr.fastq -x (ont, pb, ccs) [options]
   	-r         <FILE>    genome assembly in a fasta file
 	-i         <FILE>    NGS fastq1 file. Can be set more than one time
 	-I         <FILE>    NGS fastq2 file. Can be set more than one time
@@ -27,14 +27,14 @@
 	-d         <STR>     out directory
 	--bedtools <PATH>    path to bedtools
 	--bcftools <PATH>    path to bcftools
-	--Rscript  <PATH>    path to Rscript,
+	--Rscript  <PATH>    path to Rscript
 	-h                   print help information
 
 =head1 Usage
  
-  To generate SNV-cov dot plot, gaep need two types of input file. One of them 
-  is the vcf file includes the SNV called from alignment between NGS reads and 
-  contigs. Another one is the bam file of alignment 
+  GAEP uses the short reads to called SNVs between reads and contigs, while the 
+  long reads are utilized for calculating the read coverage. Both types of reads
+  will be aligned to the assembly.
   
 =cut
 

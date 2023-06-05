@@ -11,21 +11,19 @@ my $mode = 0;
 
 my $usage = qq(
 Program: $task
-Version: v1.0
 
 Usage:   $task 
 Options:
-         -r <FILE>           genome assembly in a fasta file
-         -i <FILE>           fastq1 file. Can be set more than one time
-         -I <FILE>           fastq2 file. Can be set more than one time
-         -l <FILE>           file listing fastq files. Read1 and read2 delimited with tab
-         -b <FILE>           bam file, will ignore -i, -I and -l
-         -v <FILE>
-         -d <INT>            output directory
-         -o <INT>            output prefix
-         --bcftools <PATH>   path to bcftools
-         --bedtools <PATH>   path to bedtools
-         -h                  print help massage
+         -r <FILE>           Genome assembly in a fasta file
+         -i <FILE>           Fastq1 file. Can be set more than one time
+         -I <FILE>           Fastq2 file. Can be set more than one time
+         -l <FILE>           File listing fastq files. Read1 and read2 delimited with tab
+         -b <FILE>           Bam file, will ignore -i, -I and -l
+         -d <INT>            Output directory
+         -o <INT>            Output prefix
+         --bcftools <PATH>   Path to bcftools
+         --bedtools <PATH>   Path to bedtools
+         -h                  Print help massage
 );
 
 ##----------------------------------options-----------------------------------##

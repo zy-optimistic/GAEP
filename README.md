@@ -21,7 +21,7 @@ macc        base accuracy based on reads mapping
 kacc        base accuracy based on K-mer  
 bkp         misassembly breakpoints detected  
 snvcov      SNV-coverage dot plot  
-busco       run busco v3  
+busco       run busco v5  
 ```
 
 ## Running example

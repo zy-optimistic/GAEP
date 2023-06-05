@@ -49,3 +49,15 @@ tblastn=
 augustus=
 {hmmsearch}
 hmmsearch=
+
+#busco5 depencies
+{busco}
+busco=
+{prodigal}
+prodigal=
+{metaeuk}
+metaeuk=
+{hmmsearch}
+hmmsearch=
+{bbtools}
+bbtools=

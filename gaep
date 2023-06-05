@@ -13,7 +13,7 @@ my $command      =  shift ;
 
 my $usage = qq(
 Program: gaep
-Version: V1.0
+Version: V1.1.0
 
 Pipeline to assess genome assembly.
 
@@ -25,7 +25,7 @@ Command: pipe       let GAEP to determine the module to be executed based on the
          kacc       base accuracy based on K-mer
          bkp        misassembly breakpoints detected
          snvcov     SNV-coverage dot plot
-         busco      run busco
+         busco      run busco v5
 		   
 );
 
@@ -45,7 +45,7 @@ if ( $command eq 'pipe' ) {
 }elsif ( $command eq 'snvcov' ) {
 	system "perl $RealBin/scripts/cov_snp_dot.pl @ARGV" and exit(1);
 }elsif ( $command eq 'busco' ) {
-	system "perl $RealBin/scripts/run_busco.pl @ARGV" and exit(1);
+	system "perl $RealBin/scripts/run_busco5.pl @ARGV" and exit(1);
 }else {
 	die "[$task] Error! Unrecognized command: $command.\n", $usage;
 }
