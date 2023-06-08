@@ -13,7 +13,7 @@ my $command      =  shift ;
 
 my $usage = qq(
 Program: gaep
-Version: V1.1.0
+Version: V1.1.1
 
 Pipeline to assess genome assembly.
 
