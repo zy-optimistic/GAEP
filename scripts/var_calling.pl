@@ -66,7 +66,7 @@ if (! $markduped) {
 	_system($markdup_cmd, $mode);
 	$bam = $markdup;
 	#index
-	my $index_cmd = "samtools index ";
+	my $index_cmd = "$samtools index ";
 	$index_cmd .= "-@ $threads " if $threads;
 	$index_cmd .= "$bam";
 	_system($index_cmd, $mode);
@@ -93,7 +93,7 @@ $semaphore->down($threads);
 $semaphore->up($threads);
 
 ##merge all vcfs into one
-my $concat = "bcftools concat $prefix_out.*.flt.vcf > $var_result";
+my $concat = "$bcftools concat $prefix_out.*.flt.vcf > $var_result";
 _system($concat, $mode);
 
 

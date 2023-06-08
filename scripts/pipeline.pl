@@ -39,7 +39,7 @@
 
 =head2 Busco setting
 
- -l           Busco lineage dataset, odb10(https://busco-data.ezlab.org/v5/data/) is supported, 
+ -l           Busco lineage dataset, odb10(https://busco-data.ezlab.org/v5/data/lineages/) is supported, 
               busco will not run without lineage dataset.
  -s           Species used for augustus training in busco.
 

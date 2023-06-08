@@ -111,7 +111,7 @@ foreach (@file_list){
 }
 
 ##sort
-my $sort_cmd = "samtools sort -O BAM ";
+my $sort_cmd = "$samtools sort -O BAM ";
 $sort_cmd .= "-@ $threads " if $threads;
 $temp = $sort_cmd;
 foreach (@sam_list){
@@ -122,7 +122,7 @@ foreach (@sam_list){
 
 ##merge
 if (@file_list > 1){
-	my $merge_cmd = "samtools merge ";
+	my $merge_cmd = "$samtools merge ";
 	$merge_cmd .= "-@ $threads " if $threads;
 	$merge_cmd .= "-h $sam_list[0].sorted.bam $out_bam ";
 	$merge_cmd .= join (" ",map {"$_.sorted.bam"} @sam_list);

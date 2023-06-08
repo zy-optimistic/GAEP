@@ -76,7 +76,7 @@ if ( @reads1 && @reads2 ) {
 my $out_file = "${prefix_out}_TRANS_mapping.bam";
 
 ##Creating a HISAT2 index
-my $index_cmd = "hisat2-build ";
+my $index_cmd = "$hisat2_build ";
 $index_cmd .= "-p $threads " if $threads;
 $index_cmd .= "$assembly $index";
 _system($index_cmd,$sys_run);
@@ -88,11 +88,11 @@ if ( defined $flist{paired} ) {
 	my $hisat2_paired_sort_bam = "$prefix_out.paired.sorted.bam";
 	#my $hisat2_paired_markdup = "$prefix_out.paired.sorted.mkdup.bam";
 	##run hisat2
-	my $hisat2_cmd = "hisat2 ";
+	my $hisat2_cmd = "$hisat2 ";
 	$hisat2_cmd .= "-p $threads " if $threads;
 	$hisat2_cmd .= "-x $index ";
 	for my $i ( 0..$#{ $flist{paired} } ) {
-		my $hisat2_cmd = "hisat2 ";
+		my $hisat2_cmd = "$hisat2 ";
 		$hisat2_cmd .= "-p $threads " if $threads;
 		$hisat2_cmd .= "-x $index ";
 		my $reads1 = $flist{paired}[$i][0];
@@ -117,7 +117,7 @@ if ( defined $flist{paired} ) {
 	$view_cmd .= "-bS $hisat2_paired_out > $hisat2_paired_bam";
 	_system($view_cmd, $sys_run);
 	##samtools sort
-	my $sort_cmd = "samtools sort ";
+	my $sort_cmd = "$samtools sort ";
 	$sort_cmd .= "-@ $threads " if $threads;
 	$sort_cmd .= "$hisat2_paired_bam -o $hisat2_paired_sort_bam";
 	_system ($sort_cmd,$sys_run);
@@ -134,7 +134,7 @@ if ( defined $flist{single} ) {
 	
 	##run hisat2
 	for my $i ( 0..$#{ $flist{single} } ){
-		my $hisat2_cmd = "hisat2 ";
+		my $hisat2_cmd = "$hisat2 ";
 		$hisat2_cmd .= "-p $threads " if $threads;
 		$hisat2_cmd .= "-x $index ";
 		my $reads1 = $flist{single}[0];
@@ -158,7 +158,7 @@ if ( defined $flist{single} ) {
 	$view_cmd .= "-bS $hisat2_single_out > $hisat2_single_bam";
 	_system($view_cmd, $sys_run);
 	##samtools sort
-	my $sort_cmd = "samtools sort ";
+	my $sort_cmd = "$samtools sort ";
 	$sort_cmd .= "-@ $threads " if $threads;
 	$sort_cmd .= "$hisat2_single_bam -o $hisat2_single_sort_bam";
 	_system ($sort_cmd,$sys_run);
