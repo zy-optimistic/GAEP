@@ -15,13 +15,13 @@ cd GAEP
 ```
 gaep <command> [options]
 
-pipe        let GAEP to determine the module to be executed based on the input data   
-stat        report genome basic information  
-macc        base accuracy based on reads mapping  
-kacc        base accuracy based on K-mer  
-bkp         misassembly breakpoints detected  
-snvcov      SNV-coverage dot plot  
-busco       run busco v5  
+pipe   (NGS,TGS,trans)  let GAEP to determine the module to be executed based on the input data   
+stat                    report genome basic information  
+macc   (NGS)            base accuracy based on reads mapping  
+kacc   (NGS)            base accuracy based on K-mer  
+bkp    (TGS)            misassembly breakpoints detected  
+snvcov (NGS,TGS)        SNV-coverage dot plot  
+busco                   run busco v5  
 ```
 
 ## Running example
