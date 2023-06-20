@@ -23,11 +23,12 @@ pbsim *.ref.fasta --prefix simu_pb --depth 50 --length-min 5000 --length-max 500
 
 # Output 
 The positions of simulated misassemblies can be found in STDOUT.
-Format:
+```
+#Format:
 No  strand  contig  type  length  start  end
 41	1	chr1	ins	48762	14640630	14640631
 41	2	chr1	ins	48762	14697478	14746240
-
+```
 For strand:
 1 Misassemblies corresponding to positions in the reference sequence.
 2 Misassembly positions in the simulated sequence.
