@@ -3,6 +3,8 @@ These scripts are used to simulate the misassemblies using a template genome.
 
 # Running
 ```bash
+#At first, we recommend to remove the contigs less than 500k in template.fasta.
+
 #Index
 samtools faidx template.fasta
 
