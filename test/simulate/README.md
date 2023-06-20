@@ -3,6 +3,9 @@ These scripts are used to simulate the misassemblies using a template genome.
 
 # Running
 ```bash
+#Index
+samtools faidx template.fasta
+
 #Randomly generate the positions of misassemlies
 perl simu_misassembly_posi.pl template.fasta > position.txt
 
