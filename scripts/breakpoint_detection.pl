@@ -228,7 +228,7 @@ for my $ctg (@ctg_list) {
 	if (-s "${bkp_t_prefix}_$ctg.txt") {
 		open RES, '<', "${bkp_t_prefix}_$ctg.txt" || die "Can't open such file: ${bkp_t_prefix}_$ctg.txt";
 		while (<RES>) {
-			my $type = (split)[-1];
+			my $type = (split)[8];
 			print OUT if $type > 0;
 		}
 		close RES;
@@ -428,7 +428,7 @@ sub parse_alignment {
 	return if $flag&260;
 	## ref
 	my $ref    = $contig;
-	my $rstart = $align->pos+1;
+	my $rstart = $align->start;
 	my $cigar  = $align->cigar_str;
 
 	#parse cigar
@@ -437,12 +437,12 @@ sub parse_alignment {
 	while ($cigar =~ /(\d+)([SHMIDNP=X])/g){
 		if ( $1 >= 1000 ) {
 			if ( $2 eq 'D' ) {
-				my $lbreakpoint = $rstart + $atype{"M"} + $atype{"X"} + $atype{"="} + $atype{"D"};
-				my $rbreakpoint = $lbreakpoint + $1;
+				my $lbreakpoint = $rstart + $atype{"M"} + $atype{"X"} + $atype{"="} + $atype{"D"} - 1;
+				my $rbreakpoint = $lbreakpoint + $1 + 1;
 				print $POSI join("\t", $ref, "Dr", $lbreakpoint),"\n";
 				print $POSI join("\t", $ref, "Dl", $rbreakpoint),"\n";
 			}elsif ( $2 eq 'I' ) {
-				my $lbreakpoint = $rstart + $atype{"M"} + $atype{"D"};
+				my $lbreakpoint = $rstart + $atype{"M"} + $atype{"X"} + $atype{"="} + $atype{"D"} - 1;
 				my $rbreakpoint = $lbreakpoint + 1;
 				print $POSI join("\t", $ref, "Ir", $lbreakpoint),"\n";
 				print $POSI join("\t", $ref, "Il", $rbreakpoint),"\n";
@@ -484,7 +484,8 @@ sub merge_sites{
 	my $rseq  = "";
 	my $tcoor = 0;
 	my @clip;	    #number of clips in a region
-	
+	my %btype = ("Dl" => 0,"Dr" => 0,"Il" => 0,"Ir" => 0,"l"  => 0,"r"  => 0,"dl" => 0,"dr" => 0);
+
 	while (<$POSI>){
 		chomp;
 		my @line  = split;
@@ -493,31 +494,45 @@ sub merge_sites{
 		
 		if ($line[0] ne $rseq){
 			if (@clip && @clip + 1 >= $bam_depth/10){
-				print $AB_COOR "$rseq\t$clip[0]\t$tcoor\t",$tcoor-$clip[0]+1,"\t",@clip+1,"\n";
+				print $AB_COOR join("\t", $rseq, $clip[0], $tcoor, $tcoor-$clip[0]+1, @clip+1,  
+				                    $btype{"Dl"}, $btype{"Dr"}, $btype{"Il"}, $btype{"Ir"}, 
+									$btype{"l" }, $btype{"r" }, $btype{"dl"}, $btype{"dr"},
+				                   ) ,"\n";
 				#depth_check($rseq, $clip[0]-150, $tcoor+150);
 				#break_reads_info($rseq, $clip[0]-150, $tcoor+150);
 			}
 			$rseq = $line[0];
 			@clip = ();
 			$tcoor = 0;
+			%btype = ("Dl" => 0,"Dr" => 0,"Il" => 0,"Ir" => 0,"l"  => 0,"r"  => 0,"dl" => 0,"dr" => 0);
+			$btype{$line[1]} += 1;
 		}else{
 			if ($rcoor - $tcoor <= $site_distance){
 				push @clip, $tcoor;
 				$tcoor = $rcoor;
+				$btype{$line[1]} += 1;
 			}elsif (@clip){
 				if (@clip && @clip + 1 >= $bam_depth/10){
-					print $AB_COOR "$rseq\t$clip[0]\t$tcoor\t",$tcoor-$clip[0]+1,"\t",@clip+1,"\n";
+					print $AB_COOR join("\t", $rseq, $clip[0], $tcoor, $tcoor-$clip[0]+1, @clip+1,  
+										$btype{"Dl"}, $btype{"Dr"}, $btype{"Il"}, $btype{"Ir"}, 
+										$btype{"l" }, $btype{"r" }, $btype{"dl"}, $btype{"dr"},
+										) ,"\n";
 					#depth_check($rseq, $clip[0]-150, $tcoor+150);
 					#break_reads_info($rseq, $clip[0]-150, $tcoor+150);
 				}
 				@clip = ();
+				%btype = ("Dl" => 0,"Dr" => 0,"Il" => 0,"Ir" => 0,"l"  => 0,"r"  => 0,"dl" => 0,"dr" => 0);
+				$btype{$line[1]} += 1;
 			}
 		}
 		$tcoor = $rcoor;
 	}
 	
 	if (@clip && @clip + 1 >= $bam_depth/10){
-		print $AB_COOR "$rseq\t$clip[0]\t$tcoor\t",$tcoor-$clip[0]+1,"\t",@clip+1,"\n";
+		print $AB_COOR join("\t", $rseq, $clip[0], $tcoor, $tcoor-$clip[0]+1, @clip+1,  
+							$btype{"Dl"}, $btype{"Dr"}, $btype{"Il"}, $btype{"Ir"}, 
+							$btype{"l" }, $btype{"r" }, $btype{"dl"}, $btype{"dr"},
+							) ,"\n";
 		#depth_check($rseq, $clip[0]-150, $tcoor+150);
 		#break_reads_info($rseq, $clip[0]-150, $tcoor+150);
 	}
@@ -539,7 +554,9 @@ sub br_filter_process {
 			open my $RES, '>', "${bkp_t_prefix}_$contig.txt" or die "[$task]Can't open such file: ${bkp_t_prefix}_$contig.txt";
 			while (<BKP>) {
 				chomp;
-				my ($ctg, $start, $end) = split;
+				####my ($ctg, $start, $end) = split;
+				my ($ctg, $start, $end, @count) = split;
+				next if ( ($count[8]+$count[9])/$count[1] >= 0.5 ); # $count[1] != 0
 				my @alignments = $sam->get_features_by_location(-seq_id => $ctg,
 																-start  => $start-1000,
 																-end    => $end+1000);
@@ -589,21 +606,21 @@ sub br_filter {
 			$read_info{span} += 1;
 			#insertion or deletion
 			my %atype  = ();
-			$atype{$_} = 0 for ('S','H','M','I','D');   #,'N','P','=','X'
-			while ($cigar =~ /(\d+)([SHMID])/g){
+			$atype{$_}       = 0 for ("S","H","M","I","D","N","P","=","X");
+			while ($cigar =~ /(\d+)([SHMIDNP=X])/g){
 				if ( $1 >= 1000 ) {
 					if ( $2 eq 'D' ) {
-						my $lbreakpoint = $rstart + $atype{'M'} + $atype{'D'};
-						my $rbreakpoint = $lbreakpoint + $1;
+						my $lbreakpoint = $rstart + $atype{"M"} + $atype{"X"} + $atype{"="} + $atype{"D"} - 1 ;
+						my $rbreakpoint = $lbreakpoint + $1 + 1;
 						next if ($rbreakpoint < $start);
 						last if ($lbreakpoint > $end);
-						next LINE if ($lbreakpoint < $start && $rbreakpoint > $end);
+						#next LINE if ($lbreakpoint < $start && $rbreakpoint > $end);
 						$read_info{nospan} += 1;
 						$read_info{span} -= 1;
 						last;
 					}elsif ( $2 eq 'I' ) {
-						my $breakpoint  = $rstart + $atype{'M'} + $atype{'D'};
-						next if ($breakpoint < $start);
+						my $breakpoint  = $rstart + $atype{"M"} + $atype{"X"} + $atype{"="} + $atype{"D"} - 1;
+						next if ($breakpoint + 1 < $start);
 						last if ($breakpoint > $end);
 						$read_info{nospan} += 1;
 						$read_info{span} -= 1;
@@ -670,7 +687,7 @@ sub br_filter {
 			       $read_info{nospan}/$total > 0.75                                   ?  2 :
 			       ($max_cov > $mean_cov+3*$sd_cov || $max_cov < $mean_cov-3*$sd_cov) ?  3 :
 		                                                                                -2 ;
-	print $FILE join("\t",$ctg,$start,$end,$read_info{span},$read_info{nospan},$read_info{Lcov},$read_info{Bcov},$read_info{Rcov},$bkp_type), "\n";																					
+	print $FILE join("\t",$ctg,$start,$end,$read_info{span},$read_info{nospan},$read_info{Lcov},$read_info{Bcov},$read_info{Rcov},$bkp_type), "\n";
 }
 
 sub max_min_three {
