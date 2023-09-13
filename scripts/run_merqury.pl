@@ -106,13 +106,16 @@ for my $read (@reads) {
 }
 
 ##change directory and create symbolic link.
-my $assembly_a = `pwd`;
-$assembly_a =~ s/\n?$//;
-$assembly_a =~ s/\/?$//;
-$assembly_a = $assembly_a."/".$assembly;
+if ($assembly !~ /^\//) {
+	my $assembly_a = `pwd`;
+	$assembly_a =~ s/\n?$//;
+	$assembly_a =~ s/\/?$//;
+	$assembly_a = $assembly_a."/".$assembly;
+	$assembly = $assembly_a;
+}
 my $assembly_s = basename($assembly);
 chdir("$dir") or die "[$task] Can't open directory: $dir.\n";
-symlink $assembly_a, $assembly_s or die "[$task] Can't create symbolic link: $assembly_s.\n"; 
+symlink $assembly, $assembly_s or die "[$task] Can't create symbolic link: $assembly_s.\n";
 ##merge
 if (@reads > 1) {
     my $merge_cmd = "$meryl union-sum output $prefix.meryl meryl";

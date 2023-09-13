@@ -231,8 +231,8 @@ if (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
 
 #snv_coverage dot-plot
 
-print "\n\n\n",join("\t", $bam_tgs, $bam_ngs),"\n\n\n";
-if (-e $bam_tgs) {
+#print "\n\n\n",join("\t", $bam_tgs, $bam_ngs),"\n\n\n";
+if (@{$data{TGS}->{data}}) {
 	my $sc_tgs_cmd = "$RealBin/cov_snp_dot.pl -r $data{assembly} -b $bam_tgs -v $vcf ";
 	$sc_tgs_cmd   .= "-d $snvcov_tgs ";
 	$sc_tgs_cmd   .= "-o $prefix ";
@@ -240,7 +240,7 @@ if (-e $bam_tgs) {
 	$sc_tgs_cmd   .= "--bcftools $software{bcftools}->{bcftools} " if $software{bcftools}->{bcftools};
 	$sc_tgs_cmd   .= "--Rscript $software{Rscript}->{Rscript} " if $software{Rscript}->{Rscript};
 	push @cmd, [0x9000, 0x0010, "Now plot snv_coverage dot-plot using tgs bam file.\n", $sc_tgs_cmd];
-}elsif (-e $bam_ngs) {
+}elsif (@{$data{NGS}->{data1}} or @{$data{NGS}->{data2}}) {
 	my $sc_ngs_cmd = "$RealBin/cov_snp_dot.pl -r $data{assembly} -b $bam_ngs -v $vcf ";
 	$sc_ngs_cmd   .= "-d $snvcov_ngs ";
 	$sc_ngs_cmd   .= "-o $prefix ";
