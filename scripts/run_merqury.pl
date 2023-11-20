@@ -9,9 +9,9 @@ my $task = "run_merqury";
 my $mode = 0;
 
 my $usage = qq(
-Program: $task
+Program: gaep kacc
 
-Usage:   $task <-r fasta> <-i fastq> [<-i fastq>] [options]
+Usage:   gaep kacc <-r fasta> <-i fastq> [<-i fastq>] [options]
 Options:
          -r          Genome assembly in a fasta file
          -g          Total length of assembly

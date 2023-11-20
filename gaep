@@ -9,11 +9,11 @@ use FindBin qw ($RealBin);
 my $task = 'gaep';
 my $mode = 0;
 
-my $command      =  shift ;
+my $command =  shift ;
 
 my $usage = qq(
 Program: gaep
-Version: V1.1.1
+Version: V1.2.3
 
 Pipeline to assess genome assembly.
 

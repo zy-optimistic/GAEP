@@ -3,7 +3,7 @@
 =head1 Description
 
  GAEP: Genome Assembly Evaluating Pipeline
- Version: V1.1.1
+ Version: V1.2.3
 
 =head1 Usage
 

@@ -10,9 +10,9 @@ my $task = "stat_accuracy_base";
 my $mode = 0;
 
 my $usage = qq(
-Program: $task
+Program: gaep macc
 
-Usage:   $task 
+Usage:   gaep macc <-r fasta_file> [options]
 Options:
          -r <FILE>           Genome assembly in a fasta file
          -i <FILE>           Fastq1 file. Can be set more than one time

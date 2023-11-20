@@ -10,10 +10,10 @@ my $task = "run_busco5";
 my $mode = 0;
 
 my $usage = <<USAGE;
-Program: $task
+Program: gaep busco
 
 Command: 
-    $task -r assembly [options]
+    gaep busco <-r assembly> [options]
 
 Options: 
     -d <PATH>       output directory
@@ -53,7 +53,7 @@ GetOptions(
 	"h"              => \$help,
 );
 
-die $usage if $help || (!$assembly && !$lineage);
+die $usage if $help || (!$assembly || !$lineage);
 
 $lineage = "./$lineage" if $lineage !~ /\//;
 if (-e "$lineage/dataset.cfg") {
@@ -78,7 +78,10 @@ if ($dir && !-e $dir){
 		die "[$task]Error! Can't make directory:\"$dir\"\n";
 	}
 }
-$prefix_out   = "busco_output" unless $prefix_out;
+#elsif(!$dir) {
+#	$dir='./run_busco5_output';
+#}
+$prefix_out = "busco_output" unless $prefix_out;
 
 #$ENV{PATH} = "$ENV{PATH}".":".dirname($config->{'augustus'});
 #my $AUGUSTUS_CONFIG_PATH = dirname($config->{'augustus'})."/../config";
@@ -108,13 +111,6 @@ _system($busco_cmd, $mode);
 sub create_config {
 	my $config  = shift;
 	my $def_con = shift;
-	#$config->{'tblastn'}              = dirname($config->{'tblastn'});
-	#$config->{'makeblastdb'}          = $config->{'tblastn'};
-	#$config->{'augustus'}             = dirname($config->{'augustus'});
-	#$config->{'etraining'}            = $config->{'augustus'};
-	#$config->{'gff2gbSmallDNA.pl'}    = $config->{'augustus'};
-	#$config->{'new_species.pl'}       = $config->{'augustus'};
-	#$config->{'optimize_augustus.pl'} = $config->{'augustus'};
 	if (lc($domain) eq 'eukaryota') {
 		$config->{metaeuk} = $config->{metaeuk} ? check_software("metaeuk", $config->{metaeuk}) : check_software("metaeuk");
 		die "[$task] Error! Can't find metaeuk.\nPlease input a correct path or add it to environment.\n" if $config->{'metaeuk'} eq "-1"; 

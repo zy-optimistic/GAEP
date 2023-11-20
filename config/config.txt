@@ -52,4 +52,5 @@ metaeuk=
 {hmmsearch}
 hmmsearch=
 {bbtools}
+#path to stat.sh
 bbtools=

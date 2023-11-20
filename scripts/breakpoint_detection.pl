@@ -14,8 +14,9 @@ my $task = "bkp_detection";
 my $mode = 0;
 
 my $usage = <<USAGE;
-Program: $task
+Program: gaep bkp
 
+Usage:   gaep bkp <-r fasta_file> [options]
 Options:
          -r <FILE>           genome assembly in a fasta file
          -i <FILE>           Fastq file. Can be set more than one time.
