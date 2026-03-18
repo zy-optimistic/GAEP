@@ -11,6 +11,21 @@ git clone https://github.com/zy-optimistic/GAEP.git
 cd GAEP  
 ./gaep  
 ```
+
+## Docker container
+
+```
+# Assuming docker and Apptainer are installed already
+# Use the supplied Dockerfile to build a docker container
+docker build -t gaep_pipeline .
+
+# Now use apptainer to build a transferable container from the docker image on this machine
+apptainer build gaep.sif docker-daemon:gaep_pipeline:latest
+
+# Test
+apptainer run gaep.sif gaep stat <fasta file>
+```
+
 ## Usage
 ```
 gaep <command> [options]
