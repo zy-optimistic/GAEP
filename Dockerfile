@@ -34,8 +34,10 @@ RUN micromamba create -y -n gaep_env -c conda-forge -c bioconda \
     seqkit=2.4.0 \
     merqury=1.3 \
     meryl=1.3 \
+    minimap2 \
     numpy \
     matplotlib \
+    perl-bio-db-hts \
     pandas
 
 # Clone the GAEP repository
